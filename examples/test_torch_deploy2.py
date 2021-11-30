@@ -23,7 +23,7 @@ from typing import Dict, Tuple, List
 from src.fast_deploy.pipeline import OnnxPipeline
 # from fast_deploy.schema import ModelSchema
 # from fast_deploy.convert import  convert_and_optimize
-from src.fast_deploy.backend.torch_ort import convert_pytorch, create_model_for_provider, bert_optimize_onnx, generic_optimize_onnx
+from src.fast_deploy.backend.torch_ort import convert_pytorch, create_model_for_provider, transformers_optimize_onnx, generic_optimize_onnx
 from src.fast_deploy.templates.transformer_triton import Configuration
 
 

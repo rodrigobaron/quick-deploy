@@ -6,7 +6,7 @@ LONG_DESCRIPTION = open('README.md').read()
 setup(
     name='fast-deploy',
     version=VERSION,
-    description='FastDeploy optimize and deploy your Machine Learning models as API.'
+    description='FastDeploy optimize and deploy your Machine Learning models as API.',
     long_description=LONG_DESCRIPTION,
     long_description_content_type="text/markdown",
     url="https://github.com/rodrigobaron/fastdeploy",

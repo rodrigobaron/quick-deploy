@@ -4,6 +4,19 @@ from scipy.special import softmax
 
 
 class OnnxPipeline:
+    """Transformers pipeline compatible with onnx model
+
+    This is used to create an standalone execution.
+
+    Parameters
+    ----------
+    model: OnnxModel
+        The onnx model to get the logits.
+    tokenizer: Tokenizer
+        Transformers tokenizer.
+    intents:
+        Convert tokens to words.
+    """    
     def __init__(self, model, tokenizer, intents=None):
         self.model = model
         self.tokenizer = tokenizer

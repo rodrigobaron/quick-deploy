@@ -1,74 +1,74 @@
-from typing import Callable, Iterable, Dict
-from datasets import load_metric
-from time import perf_counter
+import logging
+from argparse import Namespace
+
+from collections import OrderedDict
+from typing import Dict, Tuple
+
+import torch
 import numpy as np
-from pathlib import Path
 
 
-class PerformanceBenchmark:
-    def __init__(self, pipeline: Callable, dataset: Iterable, name: str = "baseline"):
-        self.pipeline = pipeline
-        self.dataset = dataset
-        self.name = name
+def setup_logging(level: int = logging.INFO) -> None:
+    """Setup the logging to desired level and format the message.
 
-    def compute_accuracy(self):
-        pass
+    This filter the logging by the level and format the message.
 
-    def compute_size(self):
-        pass
-
-    def time_pipeline(self):
-        pass
-
-    def run_benchmark(self):
-        metrics = {"name": self.name}
-        metrics['size'] = self.compute_size()
-        metrics['latency'] = self.time_pipeline()
-        metrics['accuracy'] = self.compute_accuracy()
-        return metrics
+    Parameters
+    ----------
+    level: int
+        The logging level.
+    """
+    logging.basicConfig(format="%(asctime)s %(levelname)-8s %(message)s", datefmt="%m/%d/%Y %H:%M:%S", level=level)
 
 
-class LMPerformanceBenchmark(PerformanceBenchmark):
+def get_provider(args: Namespace) -> str:
+    """Get provider by common argparse parameters.
+
+    This return the execution ort provide: 'CUDAExecutionProvider' or  'CPUExecutionProvider'.
+
+    Parameters
+    ----------
+    args: Namespace
+        The argparse namespace.
     
-    def compute_accuracy(self):
-        accuracy_score = load_metric('accuracy')
-        intents = self.dataset.features["intent"]
-
-        preds, labels = [], []
-        for example in self.dataset:
-            pred = self.pipeline(example["text"])[0]["label"]
-            label = example["intent"]
-            preds.append(intents.str2int(pred))
-            labels.append(label)
-        accuracy = accuracy_score.compute(predictions=preds, references=labels)
-        print(f"Accuracy on test set - {accuracy['accuracy']:.3f}")
-        return accuracy
-
-    def time_pipeline(self):
-        model_inputs = next(iter(self.dataset))['text']
-        latencies = []
-        # Warmup
-        for _ in range(10):
-            _ = self.pipeline(model_inputs)
-        # Timed run
-        for _ in range(100):
-            start_time = perf_counter()
-            _ = self.pipeline(model_inputs)
-            latency = perf_counter() - start_time
-            latencies.append(latency)
-        # Compute run statistics
-        time_avg_ms = 1000 * np.mean(latencies)
-        time_std_ms = 1000 * np.std(latencies)
-        print(f"Average latency (ms) - {time_avg_ms:.2f} +\- {time_std_ms:.2f}")
-        return {"time_avg_ms": time_avg_ms, "time_std_ms": time_std_ms}
-
-
-class OnnxPerformanceBenchmark(LMPerformanceBenchmark):
-    def __init__(self, pipeline: Callable, dataset: Iterable, model_path: Path, name: str = "baseline"):
-        super().__init__(pipeline, dataset, name)
-        self.model_path = model_path
+    Returns
+    ----------
+    str
+        'CUDAExecutionProvider' or  'CPUExecutionProvider'.
+    """ 
+    if args.cuda:
+        assert torch.cuda.is_available(), "CUDA is not available. Please check your CUDA installation"
+        return "CUDAExecutionProvider"
     
-    def compute_size(self):
-        size_mb = Path(self.model_path).stat().st_size / (1024 * 1024)
-        print(f"Model size (MB) - {size_mb:.2f}")
-        return {"size_mb": size_mb}
+    return "CPUExecutionProvider"
+
+
+def parse_transformer_torch_input(
+    seq_len: int, batch_size: int, include_token_ids: bool
+) -> Tuple[Dict[str, torch.Tensor], Dict[str, np.ndarray]]:
+    """Get transformers model input as torch and onnx.
+
+    This is used to create torch and onnx model input configuration.
+
+    Parameters
+    ----------
+    seq_len: int
+        Transformer model sequence length.
+    include_token_ids: bool
+        Check if need return the token ids also.
+    
+    Returns
+    ----------
+    Tuple[Tuple[Dict[str, Tensor]], Tuple[Dict[str, Tensor]]]
+        A tuple of same shape for torch and onnx.
+    """ 
+    shape = (batch_size, seq_len)
+    inputs_pytorch: OrderedDict[str, torch.Tensor] = OrderedDict()
+    inputs_pytorch["input_ids"] = torch.randint(high=100, size=shape, dtype=torch.long)
+    if include_token_ids:
+        inputs_pytorch["token_type_ids"] = torch.ones(size=shape, dtype=torch.long)
+    inputs_pytorch["attention_mask"] = torch.ones(size=shape, dtype=torch.long)
+    inputs_onnx: Dict[str, np.ndarray] = {
+        k: np.ascontiguousarray(v.detach().cpu().numpy()) for k, v in inputs_pytorch.items()
+    }
+    return inputs_pytorch, inputs_onnx

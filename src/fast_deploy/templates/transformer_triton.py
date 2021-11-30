@@ -6,7 +6,28 @@ from pathlib import Path
 from transformers import PreTrainedTokenizer
 
 
-class Configuration:
+class TransformersConfiguration:
+    """Transformer Triton configuration
+
+    This create the triton api for the models, in case of an transformer model it create three services: model, tokenizer and ensemble of tokenizer + model.
+
+    Parameters
+    ----------
+    workind_directory: str
+        The directory to output the models and configuration.
+    model_name: str
+        The model to registry in Triton.
+    batch_size: int
+        The optimized batch size.
+    nb_output: int
+        The output dimension.
+    nb_instance: int
+        Number of model instances Triton should run.
+    include_token_type: bool
+        Handle the token input.
+    use_cuda: bool
+        Handle GPU model allocation.
+    """
     def __init__(
         self,
         workind_directory: str,
@@ -15,6 +36,7 @@ class Configuration:
         nb_output: int,
         nb_instance: int,
         include_token_type: bool,
+        use_cuda: bool
     ):
         self.model_name = f"{model_name}_onnx"
         self.model_folder_name = f"{self.model_name}_model"
@@ -28,6 +50,7 @@ class Configuration:
         self.workind_directory = workind_directory
         self.input_type = "TYPE_INT64"
         self.inference_platform = "onnxruntime_onnx"
+        self.kind = "KIND_GPU" if use_cuda else "KIND_CPU"
 
     def __get_tokens(self):
         token_type = ""
@@ -56,7 +79,7 @@ class Configuration:
 instance_group [
     {{
       count: {self.nb_instance}
-      kind: KIND_GPU
+      kind: {self.kind}
     }}
 ]
 """.strip()
@@ -183,6 +206,17 @@ ensemble_scheduling {{
 """.strip()
 
     def create_folders(self, tokenizer: PreTrainedTokenizer, model_path: str):
+        """Create the models folder for Triton.
+
+        This create model structure for Triton create the models enpoints and setup the ensemble of tokenizer+model using an custom python request handler.
+
+        Parameters
+        ----------
+        tokenizer: PreTrainedTokenizer
+            Transformers pre-trained tokenizer
+        model_path: str
+            Model full path
+        """
         wd_path = Path(self.workind_directory)
         wd_path.mkdir(parents=True, exist_ok=True)
         for folder_name, conf_func in [
