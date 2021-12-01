@@ -1,13 +1,13 @@
 from pathlib import Path
 from time import perf_counter
-from typing import Callable, Iterable
+from typing import Callable
 
 import numpy as np
-from datasets import load_metric
+from datasets import load_metric, Dataset
 
 
 class PerformanceBenchmark:
-    def __init__(self, pipeline: Callable, dataset: Iterable, name: str = "baseline"):
+    def __init__(self, pipeline: Callable, dataset: Dataset, name: str = "baseline"):
         self.pipeline = pipeline
         self.dataset = dataset
         self.name = name
@@ -67,7 +67,7 @@ class OnnxPerformanceBenchmark(LMPerformanceBenchmark):
     def __init__(
         self,
         pipeline: Callable,
-        dataset: Iterable,
+        dataset: Dataset,
         model_path: Path,
         name: str = "baseline",
     ):

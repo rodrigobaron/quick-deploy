@@ -1,7 +1,7 @@
 import logging
 from argparse import Namespace
 from collections import OrderedDict
-from typing import Dict, Tuple
+from typing import Tuple, OrderedDict as OrderedDictType
 
 import numpy as np
 import torch
@@ -50,7 +50,7 @@ def get_provider(args: Namespace) -> str:
 
 def parse_transformer_torch_input(
     seq_len: int, batch_size: int, include_token_ids: bool
-) -> Tuple[Dict[str, torch.Tensor], Dict[str, np.ndarray]]:
+) -> Tuple[OrderedDictType[str, torch.Tensor], OrderedDictType[str, np.ndarray]]:
     """Get transformers model input as torch and onnx.
 
     This is used to create torch and onnx model input configuration.
@@ -73,8 +73,8 @@ def parse_transformer_torch_input(
     if include_token_ids:
         inputs_pytorch["token_type_ids"] = torch.ones(size=shape, dtype=torch.long)
     inputs_pytorch["attention_mask"] = torch.ones(size=shape, dtype=torch.long)
-    inputs_onnx: Dict[str, np.ndarray] = {
+    inputs_onnx: OrderedDict[str, np.ndarray] = OrderedDict({
         k: np.ascontiguousarray(v.detach().cpu().numpy())
         for k, v in inputs_pytorch.items()
-    }
+    })
     return inputs_pytorch, inputs_onnx

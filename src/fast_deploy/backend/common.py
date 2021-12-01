@@ -3,6 +3,7 @@ from enum import Enum
 
 from onnxruntime import GraphOptimizationLevel, InferenceSession, SessionOptions
 from onnxruntime.quantization import QuantType, quantize_dynamic
+from typing import List
 
 
 class WeightType(Enum):
@@ -69,5 +70,5 @@ def create_model_for_provider(path: str, provider_to_use: str) -> InferenceSessi
     if provider_to_use == "CPUExecutionProvider":
         options.intra_op_num_threads = multiprocessing.cpu_count()
 
-    provider_to_use = [provider_to_use]
-    return InferenceSession(path, options, providers=provider_to_use)
+    providers: List[str] = [provider_to_use]
+    return InferenceSession(path, options, providers=providers)
