@@ -1,24 +1,20 @@
 import argparse
 import logging
-from pathlib import Path
-
 from collections import OrderedDict
-from typing import Dict, Tuple, List
-from fast_deploy.pipeline import OnnxPipeline
-from fast_deploy.backend.transformers_ort import (
-    transformers_convert_pytorch,
-    transformers_optimize_onnx,
-)
-from fast_deploy.backend.common import (
-    create_model_for_provider,
-    generic_optimize_onnx,
-    WeightType,
-)
-from fast_deploy.templates.transformer_triton import TransformersConfiguration
-from fast_deploy.utils import setup_logging, get_provider, parse_transformer_torch_input
+from pathlib import Path
+from typing import Dict, List, Tuple
 
 import numpy as np
 import torch
+
+from fast_deploy.backend.common import (WeightType, create_model_for_provider,
+                                        generic_optimize_onnx)
+from fast_deploy.backend.transformers_ort import (transformers_convert_pytorch,
+                                                  transformers_optimize_onnx)
+from fast_deploy.pipeline import OnnxPipeline
+from fast_deploy.templates.transformer_triton import TransformersConfiguration
+from fast_deploy.utils import (get_provider, parse_transformer_torch_input,
+                               setup_logging)
 
 
 def main_transformers(args):

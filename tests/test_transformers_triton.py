@@ -1,7 +1,7 @@
-from fast_deploy.templates.transformer_triton import TransformersConfiguration
-
-import pytest
 import mock
+import pytest
+
+from fast_deploy.templates.transformer_triton import TransformersConfiguration
 
 
 @pytest.fixture

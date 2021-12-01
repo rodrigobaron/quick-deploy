@@ -1,11 +1,10 @@
 import logging
-import torch
-
-from onnxruntime.transformers import optimizer
-from onnxruntime.transformers.fusion_options import FusionOptions
-
 from pathlib import Path
 from typing import OrderedDict
+
+import torch
+from onnxruntime.transformers import optimizer
+from onnxruntime.transformers.fusion_options import FusionOptions
 
 
 def transformers_convert_pytorch(

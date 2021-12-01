@@ -1,10 +1,8 @@
-from fast_deploy.utils import parse_transformer_torch_input
-from fast_deploy.backend.transformers_ort import (
-    transformers_convert_pytorch,
-    transformers_optimize_onnx,
-)
-
 import mock
+
+from fast_deploy.backend.transformers_ort import (transformers_convert_pytorch,
+                                                  transformers_optimize_onnx)
+from fast_deploy.utils import parse_transformer_torch_input
 
 
 @mock.patch("fast_deploy.backend.transformers_ort.torch.onnx.export")

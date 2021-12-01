@@ -1,8 +1,9 @@
-from onnxruntime import GraphOptimizationLevel, InferenceSession, SessionOptions
-from onnxruntime.quantization import quantize_dynamic, QuantType
+import multiprocessing
 from enum import Enum
 
-import multiprocessing
+from onnxruntime import (GraphOptimizationLevel, InferenceSession,
+                         SessionOptions)
+from onnxruntime.quantization import QuantType, quantize_dynamic
 
 
 class WeightType(Enum):

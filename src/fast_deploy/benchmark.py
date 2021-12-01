@@ -1,8 +1,9 @@
-from typing import Callable, Iterable, Dict
-from datasets import load_metric
-from time import perf_counter
-import numpy as np
 from pathlib import Path
+from time import perf_counter
+from typing import Callable, Dict, Iterable
+
+import numpy as np
+from datasets import load_metric
 
 
 class PerformanceBenchmark:

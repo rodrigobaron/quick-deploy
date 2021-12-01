@@ -1,11 +1,10 @@
 import logging
 from argparse import Namespace
-
 from collections import OrderedDict
 from typing import Dict, Tuple
 
-import torch
 import numpy as np
+import torch
 
 
 def setup_logging(level: int = logging.INFO) -> None:

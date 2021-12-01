@@ -1,12 +1,9 @@
-from fast_deploy.backend.common import (
-    WeightType,
-    generic_optimize_onnx,
-    create_model_for_provider,
-)
+import mock
+import pytest
 from onnxruntime.quantization import QuantType
 
-import pytest
-import mock
+from fast_deploy.backend.common import (WeightType, create_model_for_provider,
+                                        generic_optimize_onnx)
 
 
 def test_weight_type_from_str():
