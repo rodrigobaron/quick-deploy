@@ -48,13 +48,13 @@ def test_generic_optimize_onnx(m):
 @mock.patch("fast_deploy.backend.common.multiprocessing")
 def test_create_model_for_provider(m, i):
 
-    onnx_model = create_model_for_provider(
+    _ = create_model_for_provider(
         path="tmp/path.optim.onnx", provider_to_use="CPUExecutionProvider"
     )
 
     m.cpu_count.assert_called()
 
-    onnx_model = create_model_for_provider(
+    _ = create_model_for_provider(
         path="tmp/path2.optim.onnx", provider_to_use="GPUExecutionProvider"
     )
 
