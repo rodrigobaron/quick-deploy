@@ -1,5 +1,4 @@
 import numpy as np
-import torch
 from scipy.special import softmax
 
 

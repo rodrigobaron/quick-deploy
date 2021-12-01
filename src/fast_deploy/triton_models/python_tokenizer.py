@@ -30,7 +30,6 @@ class TritonPythonModel:
             Triton parsed configuration
         """
         path: str = os.path.join(args["model_repository"], args["model_version"])
-        model_name: str = args["model_name"]
         self.tokenizer = AutoTokenizer.from_pretrained(path)
 
     def execute(self, requests):

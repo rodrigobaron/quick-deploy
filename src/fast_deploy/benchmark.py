@@ -1,6 +1,6 @@
 from pathlib import Path
 from time import perf_counter
-from typing import Callable, Dict, Iterable
+from typing import Callable, Iterable
 
 import numpy as np
 from datasets import load_metric
@@ -59,7 +59,7 @@ class LMPerformanceBenchmark(PerformanceBenchmark):
         # Compute run statistics
         time_avg_ms = 1000 * np.mean(latencies)
         time_std_ms = 1000 * np.std(latencies)
-        print(f"Average latency (ms) - {time_avg_ms:.2f} +\- {time_std_ms:.2f}")
+        print(f"Average latency (ms) - {time_avg_ms:.2f} +\\- {time_std_ms:.2f}")
         return {"time_avg_ms": time_avg_ms, "time_std_ms": time_std_ms}
 
 

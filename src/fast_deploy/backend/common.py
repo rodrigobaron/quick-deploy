@@ -1,8 +1,7 @@
 import multiprocessing
 from enum import Enum
 
-from onnxruntime import (GraphOptimizationLevel, InferenceSession,
-                         SessionOptions)
+from onnxruntime import GraphOptimizationLevel, InferenceSession, SessionOptions
 from onnxruntime.quantization import QuantType, quantize_dynamic
 
 

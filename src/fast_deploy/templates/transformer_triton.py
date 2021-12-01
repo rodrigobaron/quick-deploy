@@ -1,6 +1,5 @@
 import os
 import shutil
-from enum import Enum
 from pathlib import Path
 
 from transformers import PreTrainedTokenizer
@@ -9,7 +8,9 @@ from transformers import PreTrainedTokenizer
 class TransformersConfiguration:
     """Transformer Triton configuration
 
-    This create the triton api for the models, in case of an transformer model it create three services: model, tokenizer and ensemble of tokenizer + model.
+    This create the triton api for the models, in case of an transformer
+    model it create three services: model, tokenizer and ensemble of
+    tokenizer + model.
 
     Parameters
     ----------
@@ -211,7 +212,9 @@ ensemble_scheduling {{
     def create_folders(self, tokenizer: PreTrainedTokenizer, model_path: str):
         """Create the models folder for Triton.
 
-        This create model structure for Triton create the models enpoints and setup the ensemble of tokenizer+model using an custom python request handler.
+        This create model structure for Triton create the models endpoints
+        and setup the ensemble of tokenizer+model using an custom python
+        request handler.
 
         Parameters
         ----------
