@@ -22,16 +22,15 @@ class PerformanceBenchmark:
 
     def run_benchmark(self):
         metrics = {"name": self.name}
-        metrics['size'] = self.compute_size()
-        metrics['latency'] = self.time_pipeline()
-        metrics['accuracy'] = self.compute_accuracy()
+        metrics["size"] = self.compute_size()
+        metrics["latency"] = self.time_pipeline()
+        metrics["accuracy"] = self.compute_accuracy()
         return metrics
 
 
 class LMPerformanceBenchmark(PerformanceBenchmark):
-    
     def compute_accuracy(self):
-        accuracy_score = load_metric('accuracy')
+        accuracy_score = load_metric("accuracy")
         intents = self.dataset.features["intent"]
 
         preds, labels = [], []
@@ -45,7 +44,7 @@ class LMPerformanceBenchmark(PerformanceBenchmark):
         return accuracy
 
     def time_pipeline(self):
-        model_inputs = next(iter(self.dataset))['text']
+        model_inputs = next(iter(self.dataset))["text"]
         latencies = []
         # Warmup
         for _ in range(10):
@@ -64,10 +63,16 @@ class LMPerformanceBenchmark(PerformanceBenchmark):
 
 
 class OnnxPerformanceBenchmark(LMPerformanceBenchmark):
-    def __init__(self, pipeline: Callable, dataset: Iterable, model_path: Path, name: str = "baseline"):
+    def __init__(
+        self,
+        pipeline: Callable,
+        dataset: Iterable,
+        model_path: Path,
+        name: str = "baseline",
+    ):
         super().__init__(pipeline, dataset, name)
         self.model_path = model_path
-    
+
     def compute_size(self):
         size_mb = Path(self.model_path).stat().st_size / (1024 * 1024)
         print(f"Model size (MB) - {size_mb:.2f}")

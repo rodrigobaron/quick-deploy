@@ -28,6 +28,7 @@ class TransformersConfiguration:
     use_cuda: bool
         Handle GPU model allocation.
     """
+
     def __init__(
         self,
         workind_directory: str,
@@ -36,7 +37,7 @@ class TransformersConfiguration:
         nb_output: int,
         nb_instance: int,
         include_token_type: bool,
-        use_cuda: bool
+        use_cuda: bool,
     ):
         self.model_name = f"{model_name}_onnx"
         self.model_folder_name = f"{self.model_name}_model"
@@ -44,7 +45,9 @@ class TransformersConfiguration:
         self.inference_folder_name = f"{self.model_name}_inference"
         self.batch_size = batch_size
         self.nb_model_output = nb_output
-        assert nb_instance > 0, f"nb_instance=={nb_instance}: nb model instances should be positive"
+        assert (
+            nb_instance > 0
+        ), f"nb_instance=={nb_instance}: nb model instances should be positive"
         self.nb_instance = nb_instance
         self.include_token_type = include_token_type
         self.workind_directory = workind_directory
@@ -231,9 +234,19 @@ ensemble_scheduling {{
             version_folder = current_folder.joinpath("1")
             version_folder.mkdir(exist_ok=True)
 
-        tokenizer_model_folder_path = wd_path.joinpath(self.tokenizer_folder_name).joinpath("1")
+        tokenizer_model_folder_path = wd_path.joinpath(
+            self.tokenizer_folder_name
+        ).joinpath("1")
         tokenizer.save_pretrained(str(tokenizer_model_folder_path.absolute()))
-        tokenizer_model_path = Path(__file__).absolute().parent.parent.joinpath("triton_models").joinpath("python_tokenizer.py")
-        shutil.copy(str(tokenizer_model_path), str(Path(tokenizer_model_folder_path).joinpath("model.py")))
+        tokenizer_model_path = (
+            Path(__file__)
+            .absolute()
+            .parent.parent.joinpath("triton_models")
+            .joinpath("python_tokenizer.py")
+        )
+        shutil.copy(
+            str(tokenizer_model_path),
+            str(Path(tokenizer_model_folder_path).joinpath("model.py")),
+        )
         model_folder_path = wd_path.joinpath(self.model_folder_name).joinpath("1")
         shutil.copy(model_path, os.path.join(model_folder_path, "model.bin"))

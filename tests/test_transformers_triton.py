@@ -7,13 +7,13 @@ import mock
 @pytest.fixture
 def conf():
     conf = TransformersConfiguration(
-        model_name='test',
+        model_name="test",
         batch_size=0,
         nb_output=10,
         nb_instance=1,
         include_token_type=True,
-        workind_directory='tmp/',
-        use_cuda=False
+        workind_directory="tmp/",
+        use_cuda=False,
     )
     return conf
 
@@ -170,18 +170,15 @@ ensemble_scheduling {
 }""".strip()
     assert inference_conf == conf.get_inference_conf()
 
-@mock.patch('fast_deploy.templates.transformer_triton.shutil.copy')
-@mock.patch('fast_deploy.templates.transformer_triton.Path')
+
+@mock.patch("fast_deploy.templates.transformer_triton.shutil.copy")
+@mock.patch("fast_deploy.templates.transformer_triton.Path")
 def test_create_folders(p, s, conf):
     pipe_tokenizer = mock.Mock()
 
-    conf.create_folders(
-        tokenizer=pipe_tokenizer,
-        model_path='tmp/path.optim.onnx'
-    )
+    conf.create_folders(tokenizer=pipe_tokenizer, model_path="tmp/path.optim.onnx")
 
     name, args, kwargs = s.mock_calls[1]
 
-    assert 'tmp/path.optim.onnx' == args[0]
-    assert 'model.bin' in args[1]
-
+    assert "tmp/path.optim.onnx" == args[0]
+    assert "model.bin" in args[1]

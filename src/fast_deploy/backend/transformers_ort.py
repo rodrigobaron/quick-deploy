@@ -9,16 +9,16 @@ from typing import OrderedDict
 
 
 def transformers_convert_pytorch(
-    model: torch.nn.Module, 
-    output_path: str, 
-    inputs_pytorch: OrderedDict[str, torch.Tensor], 
-    opset_version: int = 12, 
-    verbose: bool = False
-    ) -> None:
+    model: torch.nn.Module,
+    output_path: str,
+    inputs_pytorch: OrderedDict[str, torch.Tensor],
+    opset_version: int = 12,
+    verbose: bool = False,
+) -> None:
     """Convert an pytorch tansformer model to onnx.
-    
+
     This model conversion is specific for transformers.
-    
+
     Parameters
     ----------
     model: torch.nn.Module
@@ -28,7 +28,7 @@ def transformers_convert_pytorch(
     inputs_pytorch: OrderedDict[str, torch.Tensor]
         the model inputs
     opset_version: int
-        the onnx op version to use. Default is 12. 
+        the onnx op version to use. Default is 12.
     verbose: bool
         show detailed logging. Defaul is False.
     """
@@ -40,8 +40,8 @@ def transformers_convert_pytorch(
         torch.onnx.export(
             model,
             args=tuple(inputs_pytorch.values()),
-            f=output_path, 
-            opset_version=opset_version, 
+            f=output_path,
+            opset_version=opset_version,
             do_constant_folding=True,
             input_names=list(inputs_pytorch.keys()),
             output_names=["output"],
@@ -50,7 +50,9 @@ def transformers_convert_pytorch(
         )
 
 
-def transformers_optimize_onnx(onnx_path: str, output_path: str, model_family:str, use_cuda: bool) -> None:
+def transformers_optimize_onnx(
+    onnx_path: str, output_path: str, model_family: str, use_cuda: bool
+) -> None:
     """Transformer model optimization.
 
     This uses the transformer family (encoder-only, decoder-only and encoder-decoder) pre defined optimizations.
@@ -76,8 +78,10 @@ def transformers_optimize_onnx(onnx_path: str, output_path: str, model_family:st
         num_heads=0,
         hidden_size=0,
         optimization_options=optimization_options,
-        only_onnxruntime=True
+        only_onnxruntime=True,
     )
 
-    logging.info(f"optimizations applied: {optimized_model.get_fused_operator_statistics()}")
+    logging.info(
+        f"optimizations applied: {optimized_model.get_fused_operator_statistics()}"
+    )
     optimized_model.save_model_to_file(output_path)

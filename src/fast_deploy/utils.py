@@ -18,7 +18,11 @@ def setup_logging(level: int = logging.INFO) -> None:
     level: int
         The logging level.
     """
-    logging.basicConfig(format="%(asctime)s %(levelname)-8s %(message)s", datefmt="%m/%d/%Y %H:%M:%S", level=level)
+    logging.basicConfig(
+        format="%(asctime)s %(levelname)-8s %(message)s",
+        datefmt="%m/%d/%Y %H:%M:%S",
+        level=level,
+    )
 
 
 def get_provider(args: Namespace) -> str:
@@ -30,16 +34,18 @@ def get_provider(args: Namespace) -> str:
     ----------
     args: Namespace
         The argparse namespace.
-    
+
     Returns
     ----------
     str
         'CUDAExecutionProvider' or  'CPUExecutionProvider'.
-    """ 
+    """
     if args.cuda:
-        assert torch.cuda.is_available(), "CUDA is not available. Please check your CUDA installation"
+        assert (
+            torch.cuda.is_available()
+        ), "CUDA is not available. Please check your CUDA installation"
         return "CUDAExecutionProvider"
-    
+
     return "CPUExecutionProvider"
 
 
@@ -56,12 +62,12 @@ def parse_transformer_torch_input(
         Transformer model sequence length.
     include_token_ids: bool
         Check if need return the token ids also.
-    
+
     Returns
     ----------
     Tuple[Tuple[Dict[str, Tensor]], Tuple[Dict[str, Tensor]]]
         A tuple of same shape for torch and onnx.
-    """ 
+    """
     shape = (batch_size, seq_len)
     inputs_pytorch: OrderedDict[str, torch.Tensor] = OrderedDict()
     inputs_pytorch["input_ids"] = torch.randint(high=100, size=shape, dtype=torch.long)
@@ -69,6 +75,7 @@ def parse_transformer_torch_input(
         inputs_pytorch["token_type_ids"] = torch.ones(size=shape, dtype=torch.long)
     inputs_pytorch["attention_mask"] = torch.ones(size=shape, dtype=torch.long)
     inputs_onnx: Dict[str, np.ndarray] = {
-        k: np.ascontiguousarray(v.detach().cpu().numpy()) for k, v in inputs_pytorch.items()
+        k: np.ascontiguousarray(v.detach().cpu().numpy())
+        for k, v in inputs_pytorch.items()
     }
     return inputs_pytorch, inputs_onnx

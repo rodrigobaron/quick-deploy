@@ -1,8 +1,4 @@
-from fast_deploy.utils import (
-    setup_logging,
-    get_provider,
-    parse_transformer_torch_input
-)
+from fast_deploy.utils import setup_logging, get_provider, parse_transformer_torch_input
 
 import logging
 import mock
@@ -11,9 +7,9 @@ import pytest
 
 def test_setup_logging():
     vals = {
-        'format': '%(asctime)s %(levelname)-8s %(message)s',
-        'datefmt': '%m/%d/%Y %H:%M:%S',
-        'level': 20
+        "format": "%(asctime)s %(levelname)-8s %(message)s",
+        "datefmt": "%m/%d/%Y %H:%M:%S",
+        "level": 20,
     }
     m = mock.Mock()
     logging.basicConfig = m
@@ -55,12 +51,10 @@ def test_get_provider():
 
 def test_parse_transformer_torch_input():
     torch_inputs, onnx_inputs = parse_transformer_torch_input(
-        seq_len=16,
-        batch_size=1,
-        include_token_ids=True
+        seq_len=16, batch_size=1, include_token_ids=True
     )
     input_keys = list(torch_inputs.keys())
-    for k in ['input_ids', 'token_type_ids', 'attention_mask']:
+    for k in ["input_ids", "token_type_ids", "attention_mask"]:
         assert k in input_keys
 
     for k in input_keys:
@@ -68,12 +62,10 @@ def test_parse_transformer_torch_input():
         assert torch_inputs[k].shape == (1, 16)
 
     torch_inputs, onnx_inputs = parse_transformer_torch_input(
-        seq_len=256,
-        batch_size=32,
-        include_token_ids=False
+        seq_len=256, batch_size=32, include_token_ids=False
     )
     input_keys = list(torch_inputs.keys())
-    for k in ['input_ids', 'attention_mask']:
+    for k in ["input_ids", "attention_mask"]:
         assert k in input_keys
 
     for k in input_keys:
