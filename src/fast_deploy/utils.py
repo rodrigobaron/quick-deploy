@@ -1,7 +1,8 @@
 import logging
 from argparse import Namespace
 from collections import OrderedDict
-from typing import Tuple, OrderedDict as OrderedDictType
+from typing import OrderedDict as OrderedDictType
+from typing import Tuple
 
 import numpy as np
 import torch
@@ -40,9 +41,7 @@ def get_provider(args: Namespace) -> str:
         'CUDAExecutionProvider' or  'CPUExecutionProvider'.
     """
     if args.cuda:
-        assert (
-            torch.cuda.is_available()
-        ), "CUDA is not available. Please check your CUDA installation"
+        assert torch.cuda.is_available(), "CUDA is not available. Please check your CUDA installation"
         return "CUDAExecutionProvider"
 
     return "CPUExecutionProvider"
@@ -73,8 +72,7 @@ def parse_transformer_torch_input(
     if include_token_ids:
         inputs_pytorch["token_type_ids"] = torch.ones(size=shape, dtype=torch.long)
     inputs_pytorch["attention_mask"] = torch.ones(size=shape, dtype=torch.long)
-    inputs_onnx: OrderedDict[str, np.ndarray] = OrderedDict({
-        k: np.ascontiguousarray(v.detach().cpu().numpy())
-        for k, v in inputs_pytorch.items()
-    })
+    inputs_onnx: OrderedDict[str, np.ndarray] = OrderedDict(
+        {k: np.ascontiguousarray(v.detach().cpu().numpy()) for k, v in inputs_pytorch.items()}
+    )
     return inputs_pytorch, inputs_onnx

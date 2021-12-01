@@ -46,9 +46,7 @@ class TransformersConfiguration:
         self.inference_folder_name = f"{self.model_name}_inference"
         self.batch_size = batch_size
         self.nb_model_output = nb_output
-        assert (
-            nb_instance > 0
-        ), f"nb_instance=={nb_instance}: nb model instances should be positive"
+        assert nb_instance > 0, f"nb_instance=={nb_instance}: nb model instances should be positive"
         self.nb_instance = nb_instance
         self.include_token_type = include_token_type
         self.workind_directory = workind_directory
@@ -237,15 +235,10 @@ ensemble_scheduling {{
             version_folder = current_folder.joinpath("1")
             version_folder.mkdir(exist_ok=True)
 
-        tokenizer_model_folder_path = wd_path.joinpath(
-            self.tokenizer_folder_name
-        ).joinpath("1")
+        tokenizer_model_folder_path = wd_path.joinpath(self.tokenizer_folder_name).joinpath("1")
         tokenizer.save_pretrained(str(tokenizer_model_folder_path.absolute()))
         tokenizer_model_path = (
-            Path(__file__)
-            .absolute()
-            .parent.parent.joinpath("triton_models")
-            .joinpath("python_tokenizer.py")
+            Path(__file__).absolute().parent.parent.joinpath("triton_models").joinpath("python_tokenizer.py")
         )
         shutil.copy(
             str(tokenizer_model_path),

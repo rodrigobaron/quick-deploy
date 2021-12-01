@@ -1,9 +1,9 @@
 import multiprocessing
 from enum import Enum
+from typing import List
 
 from onnxruntime import GraphOptimizationLevel, InferenceSession, SessionOptions
 from onnxruntime.quantization import QuantType, quantize_dynamic
-from typing import List
 
 
 class WeightType(Enum):
@@ -28,9 +28,7 @@ class WeightType(Enum):
             raise ValueError
 
 
-def generic_optimize_onnx(
-    onnx_path: str, output_path: str, weight_type: WeightType
-) -> None:
+def generic_optimize_onnx(onnx_path: str, output_path: str, weight_type: WeightType) -> None:
     """Apply dynamic quantization to any onnx model.
 
     This can be used to any model, and also to second optimization step.

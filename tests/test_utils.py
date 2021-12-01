@@ -3,8 +3,7 @@ import logging
 import mock
 import pytest
 
-from fast_deploy.utils import (get_provider, parse_transformer_torch_input,
-                               setup_logging)
+from fast_deploy.utils import get_provider, parse_transformer_torch_input, setup_logging
 
 
 def test_setup_logging():
@@ -52,9 +51,7 @@ def test_get_provider():
 
 
 def test_parse_transformer_torch_input():
-    torch_inputs, onnx_inputs = parse_transformer_torch_input(
-        seq_len=16, batch_size=1, include_token_ids=True
-    )
+    torch_inputs, onnx_inputs = parse_transformer_torch_input(seq_len=16, batch_size=1, include_token_ids=True)
     input_keys = list(torch_inputs.keys())
     for k in ["input_ids", "token_type_ids", "attention_mask"]:
         assert k in input_keys
@@ -63,9 +60,7 @@ def test_parse_transformer_torch_input():
         assert torch_inputs[k].shape == onnx_inputs[k].shape
         assert torch_inputs[k].shape == (1, 16)
 
-    torch_inputs, onnx_inputs = parse_transformer_torch_input(
-        seq_len=256, batch_size=32, include_token_ids=False
-    )
+    torch_inputs, onnx_inputs = parse_transformer_torch_input(seq_len=256, batch_size=32, include_token_ids=False)
     input_keys = list(torch_inputs.keys())
     for k in ["input_ids", "attention_mask"]:
         assert k in input_keys

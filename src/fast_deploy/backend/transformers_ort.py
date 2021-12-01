@@ -48,9 +48,7 @@ def transformers_convert_pytorch(
         )
 
 
-def transformers_optimize_onnx(
-    onnx_path: str, output_path: str, model_family: str, use_cuda: bool
-) -> None:
+def transformers_optimize_onnx(onnx_path: str, output_path: str, model_family: str, use_cuda: bool) -> None:
     """Transformer model optimization.
 
     This uses the transformer family (encoder-only, decoder-only and encoder-decoder) pre defined optimizations.
@@ -79,7 +77,5 @@ def transformers_optimize_onnx(
         only_onnxruntime=True,
     )
 
-    logging.info(
-        f"optimizations applied: {optimized_model.get_fused_operator_statistics()}"
-    )
+    logging.info(f"optimizations applied: {optimized_model.get_fused_operator_statistics()}")
     optimized_model.save_model_to_file(output_path)

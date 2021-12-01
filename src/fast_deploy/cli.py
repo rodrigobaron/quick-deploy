@@ -45,17 +45,11 @@ def main_transformers(args):
 
     Path(args.workdir).mkdir(parents=True, exist_ok=True)
     onnx_model_path = Path(f"{args.workdir}/transformer_{args.name}.onnx").as_posix()
-    onnx_optim_model_path = Path(
-        f"{args.workdir}/transformer_{args.name}.optim.onnx"
-    ).as_posix()
+    onnx_optim_model_path = Path(f"{args.workdir}/transformer_{args.name}.optim.onnx").as_posix()
 
-    transformers_convert_pytorch(
-        model=pipe_model, output_path=onnx_model_path, inputs_pytorch=inputs_pytorch
-    )
+    transformers_convert_pytorch(model=pipe_model, output_path=onnx_model_path, inputs_pytorch=inputs_pytorch)
 
-    onnx_model = create_model_for_provider(
-        path=onnx_model_path, provider_to_use=provider_to_use
-    )
+    onnx_model = create_model_for_provider(path=onnx_model_path, provider_to_use=provider_to_use)
     output_onnx = onnx_model.run(None, inputs_onnx)
     assert np.allclose(a=output_onnx, b=output_pytorch, atol=1e-1)
 
@@ -70,9 +64,7 @@ def main_transformers(args):
         output_path=onnx_optim_model_path,
         weight_type=WeightType.from_str(args.weight_type),
     )
-    onnx_model = create_model_for_provider(
-        path=onnx_optim_model_path, provider_to_use=provider_to_use
-    )
+    onnx_model = create_model_for_provider(path=onnx_optim_model_path, provider_to_use=provider_to_use)
 
     # output_onnx_optimised = onnx_model.run(None, inputs_onnx)
     # assert np.allclose(a=output_onnx_optimised, b=output_pytorch, atol=7e-1)
@@ -92,17 +84,11 @@ def main_transformers(args):
 def default_args(parser):
     parser.add_argument("-n", "--name", required=True, help="model name")
     parser.add_argument("-m", "--model", required=True, help="model path")
-    parser.add_argument(
-        "-o", "--output", required=True, help="path used to export models"
-    )
+    parser.add_argument("-o", "--output", required=True, help="path used to export models")
     parser.add_argument("-w", "--workdir", default="env/", help="model path")
-    parser.add_argument(
-        "--nb-instances", default=1, help="# of model instances", type=int
-    )
+    parser.add_argument("--nb-instances", default=1, help="# of model instances", type=int)
     parser.add_argument("--cuda", action="store_true", help="use cuda optimization")
-    parser.add_argument(
-        "-v", "--verbose", action="store_true", help="display detailed information"
-    )
+    parser.add_argument("-v", "--verbose", action="store_true", help="display detailed information")
 
 
 def main():
@@ -130,9 +116,7 @@ def main():
         required=True,
         help="pipeline task, eg: 'text-classification'",
     )
-    parser_tra.add_argument(
-        "-s", "--seq-len", default=16, help="sequence length to optimize"
-    )
+    parser_tra.add_argument("-s", "--seq-len", default=16, help="sequence length to optimize")
     parser_tra.set_defaults(func=main_transformers)
     parser_tra.add_argument(
         "-c",

@@ -2,8 +2,11 @@ import mock
 import pytest
 from onnxruntime.quantization import QuantType
 
-from fast_deploy.backend.common import (WeightType, create_model_for_provider,
-                                        generic_optimize_onnx)
+from fast_deploy.backend.common import (
+    WeightType,
+    create_model_for_provider,
+    generic_optimize_onnx,
+)
 
 
 def test_weight_type_from_str():
@@ -48,15 +51,11 @@ def test_generic_optimize_onnx(m):
 @mock.patch("fast_deploy.backend.common.multiprocessing")
 def test_create_model_for_provider(m, i):
 
-    _ = create_model_for_provider(
-        path="tmp/path.optim.onnx", provider_to_use="CPUExecutionProvider"
-    )
+    _ = create_model_for_provider(path="tmp/path.optim.onnx", provider_to_use="CPUExecutionProvider")
 
     m.cpu_count.assert_called()
 
-    _ = create_model_for_provider(
-        path="tmp/path2.optim.onnx", provider_to_use="GPUExecutionProvider"
-    )
+    _ = create_model_for_provider(path="tmp/path2.optim.onnx", provider_to_use="GPUExecutionProvider")
 
     name, args, kwargs = i.mock_calls[0]
     assert "tmp/path.optim.onnx" == args[0]

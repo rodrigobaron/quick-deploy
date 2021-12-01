@@ -3,7 +3,7 @@ from time import perf_counter
 from typing import Callable
 
 import numpy as np
-from datasets import load_metric, Dataset
+from datasets import Dataset, load_metric
 
 
 class PerformanceBenchmark:

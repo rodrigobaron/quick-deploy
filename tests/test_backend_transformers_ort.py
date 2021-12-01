@@ -1,7 +1,9 @@
 import mock
 
-from fast_deploy.backend.transformers_ort import (transformers_convert_pytorch,
-                                                  transformers_optimize_onnx)
+from fast_deploy.backend.transformers_ort import (
+    transformers_convert_pytorch,
+    transformers_optimize_onnx,
+)
 from fast_deploy.utils import parse_transformer_torch_input
 
 
@@ -9,13 +11,9 @@ from fast_deploy.utils import parse_transformer_torch_input
 def test_transformers_convert_pytorch(e):
     pipe_model = mock.Mock()
 
-    torch_inputs, onnx_inputs = parse_transformer_torch_input(
-        seq_len=16, batch_size=1, include_token_ids=True
-    )
+    torch_inputs, onnx_inputs = parse_transformer_torch_input(seq_len=16, batch_size=1, include_token_ids=True)
 
-    transformers_convert_pytorch(
-        model=pipe_model, output_path="tmp/path.onnx", inputs_pytorch=torch_inputs
-    )
+    transformers_convert_pytorch(model=pipe_model, output_path="tmp/path.onnx", inputs_pytorch=torch_inputs)
 
     name, args, kwargs = e.mock_calls[0]
     for t in kwargs["args"]:
