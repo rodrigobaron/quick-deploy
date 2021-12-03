@@ -5,11 +5,7 @@ from pathlib import Path
 import numpy as np
 import torch
 
-from fast_deploy.backend.common import (
-    WeightType,
-    create_model_for_provider,
-    generic_optimize_onnx,
-)
+from fast_deploy.backend.common import create_model_for_provider, generic_optimize_onnx
 from fast_deploy.backend.transformers_ort import (
     transformers_convert_pytorch,
     transformers_optimize_onnx,
@@ -47,27 +43,30 @@ def main_transformers(args):
     onnx_model_path = Path(f"{args.workdir}/transformer_{args.name}.onnx").as_posix()
     onnx_optim_model_path = Path(f"{args.workdir}/transformer_{args.name}.optim.onnx").as_posix()
 
-    transformers_convert_pytorch(model=pipe_model, output_path=onnx_model_path, inputs_pytorch=inputs_pytorch)
-
-    onnx_model = create_model_for_provider(path=onnx_model_path, provider_to_use=provider_to_use)
-    output_onnx = onnx_model.run(None, inputs_onnx)
-    assert np.allclose(a=output_onnx, b=output_pytorch, atol=1e-1)
-
-    transformers_optimize_onnx(
-        onnx_path=onnx_model_path,
-        output_path=onnx_optim_model_path,
-        model_family=args.tran_family,
-        use_cuda=False,
+    transformers_convert_pytorch(
+        model=pipe_model, output_path=onnx_model_path, inputs_pytorch=inputs_pytorch, verbose=args.verbose
     )
-    generic_optimize_onnx(
-        onnx_path=onnx_optim_model_path,
-        output_path=onnx_optim_model_path,
-        weight_type=WeightType.from_str(args.weight_type),
-    )
-    onnx_model = create_model_for_provider(path=onnx_optim_model_path, provider_to_use=provider_to_use)
+    del pipe_model
 
-    # output_onnx_optimised = onnx_model.run(None, inputs_onnx)
-    # assert np.allclose(a=output_onnx_optimised, b=output_pytorch, atol=7e-1)
+    # onnx_model = create_model_for_provider(path=onnx_model_path, provider_to_use=provider_to_use)
+    # output_onnx = onnx_model.run(None, inputs_onnx)
+    # assert np.allclose(a=output_onnx, b=output_pytorch, atol=1e-1)
+
+    to_optimize: str = onnx_model_path
+    if args.model_type is not None:
+        transformers_optimize_onnx(
+            onnx_path=onnx_model_path,
+            output_path=onnx_optim_model_path,
+            model_type=args.model_type,
+            use_cuda=args.cuda,
+        )
+        to_optimize = onnx_optim_model_path
+
+    generic_optimize_onnx(onnx_path=to_optimize, output_path=onnx_optim_model_path)
+    if args.atol is not None:
+        onnx_model = create_model_for_provider(path=onnx_optim_model_path, provider_to_use=provider_to_use)
+        output_onnx_optimised = onnx_model.run(None, inputs_onnx)
+        assert np.allclose(a=output_onnx_optimised, b=output_pytorch, atol=args.atol)
 
     conf = TransformersConfiguration(
         model_name=args.name,
@@ -96,19 +95,16 @@ def main():
         description="Optimize and deploy machine learning models fast as possible!",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    subparsers = parser.add_subparsers(help="transformers help", dest="transformes")
+    subparsers = parser.add_subparsers(help="transformers help", dest="transformers")
     subparsers.required = True
 
     parser_tra = subparsers.add_parser("transformers")
     default_args(parser_tra)
     parser_tra.add_argument("-t", "--tokenizer", help="tokenizer path")
     parser_tra.add_argument(
-        "-f",
-        "--tran-family",
-        default="bert",
-        help="transformer family. One of [bert, gpt2, t5]",
-        nargs="*",
-        choices=["bert", "gpt2", "t5"],
+        "--model-type",
+        help="custom optimization for transformer model type. One of [bert, bart, gpt2]",
+        choices=["bert", "bart", "gpt2"],
     )
     parser_tra.add_argument(
         "-p",
@@ -116,16 +112,10 @@ def main():
         required=True,
         help="pipeline task, eg: 'text-classification'",
     )
-    parser_tra.add_argument("-s", "--seq-len", default=16, help="sequence length to optimize")
+    parser_tra.add_argument("--seq-len", default=16, help="sequence length to optimize", type=int)
+    parser_tra.add_argument("--atol", default=None, help="test outputs when convert", type=float)
+
     parser_tra.set_defaults(func=main_transformers)
-    parser_tra.add_argument(
-        "-c",
-        "--weight-type",
-        default="float16",
-        help="Weight type. One of [int8, float16]",
-        nargs="*",
-        choices=["int8", "float16"],
-    )
 
     args = parser.parse_args()
     setup_logging(level=logging.INFO if args.verbose else logging.WARNING)

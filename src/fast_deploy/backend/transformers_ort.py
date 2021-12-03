@@ -48,10 +48,10 @@ def transformers_convert_pytorch(
         )
 
 
-def transformers_optimize_onnx(onnx_path: str, output_path: str, model_family: str, use_cuda: bool) -> None:
+def transformers_optimize_onnx(onnx_path: str, output_path: str, model_type: str, use_cuda: bool) -> None:
     """Transformer model optimization.
 
-    This uses the transformer family (encoder-only, decoder-only and encoder-decoder) pre defined optimizations.
+    This apply custom optimization for transformer model type (encoder-only, decoder-only and encoder-decoder).
 
     Parameters
     ----------
@@ -59,16 +59,17 @@ def transformers_optimize_onnx(onnx_path: str, output_path: str, model_family: s
         onnx model path.
     output_path: str
         output onnx model path.
-    model_family:str
-        model family.
+    model_type:str
+        transformer model type. One of [bert, bart, gpt2].
     use_cuda: bool
         optimize for cuda.
     """
-    optimization_options = FusionOptions(model_family)
+    logging.info(f"Optimizing for model type: {model_type}")
+    optimization_options = FusionOptions(model_type)
     optimization_options.enable_gelu_approximation = True
     optimized_model = optimizer.optimize_model(
         input=onnx_path,
-        model_type=model_family,
+        model_type=model_type,
         use_gpu=use_cuda,
         opt_level=1,
         num_heads=0,

@@ -43,7 +43,7 @@ def test_transformers_optimize_onnx(o):
     transformers_optimize_onnx(
         onnx_path="tmp/path.onnx",
         output_path="tmp/path.optim.onnx",
-        model_family="bert",
+        model_type="bert",
         use_cuda=False,
     )
     name, args, kwargs = o.mock_calls[0]
