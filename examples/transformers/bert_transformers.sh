@@ -7,5 +7,4 @@ fast-deploy transformers \
     -m bert-base-uncased \
     -o ./models/bert-imdb \
     --model-type bert \
-    --seq-len 128 \
-    --verbose
+    --seq-len 128
