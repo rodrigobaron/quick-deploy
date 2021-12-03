@@ -1,4 +1,4 @@
-from setuptools import find_namespace_packages, setup
+from setuptools import find_namespace_packages, setup, find_packages
 
 VERSION = open('VERSION').read()
 LONG_DESCRIPTION = open('README.md').read()
@@ -12,11 +12,16 @@ setup(
     url="https://github.com/rodrigobaron/fastdeploy",
     author="Rodrigo Baron",
     author_email="baron.rodrigo0@gmail.com",
-    license="MIT",
-    packages=find_namespace_packages(include=['fast_deploy.*'], where="src"),
+    license="",
     package_dir={'': 'src'},
+    packages=find_packages(where="src"),
     package_data={
         'fast_deploy': ['py.typed'],
+    },
+    entry_points={
+        'console_scripts': [
+            'fast-deploy = fast_deploy.cli:main',
+        ],
     },
     data_files=[('', ['VERSION', 'README.md', 'LICENSE'])],
     include_package_data=True,
