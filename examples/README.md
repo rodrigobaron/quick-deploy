@@ -5,8 +5,8 @@ This is under development, we will keep adding more examples and expanding the t
 
 ### Roadmap of the supported deployments
 
-- [x]  bert transformers pytorch  
-- [ ]  bart transformers pytorch  
+- [x]  ~~bert transformers pytorch~~  
+- [x]  ~~bart transformers pytorch~~  
 - [ ]  gpt transformers pytorch  
 - [ ]  t5 transformers pytorch  
 - [ ]  custom bert transformer pytorch implementation  

@@ -48,7 +48,9 @@ def transformers_convert_pytorch(
         )
 
 
-def transformers_optimize_onnx(onnx_path: str, output_path: str, model_type: str, use_cuda: bool) -> None:
+def transformers_optimize_onnx(
+    onnx_path: str, output_path: str, model_type: str, use_cuda: bool, num_heads: int = 0, hidden_size: int = 0
+) -> None:
     """Transformer model optimization.
 
     This apply custom optimization for transformer model type (encoder-only, decoder-only and encoder-decoder).
@@ -72,8 +74,8 @@ def transformers_optimize_onnx(onnx_path: str, output_path: str, model_type: str
         model_type=model_type,
         use_gpu=use_cuda,
         opt_level=1,
-        num_heads=0,
-        hidden_size=0,
+        num_heads=num_heads,
+        hidden_size=hidden_size,
         optimization_options=optimization_options,
         only_onnxruntime=True,
     )

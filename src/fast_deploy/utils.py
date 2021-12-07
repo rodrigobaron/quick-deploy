@@ -76,3 +76,31 @@ def parse_transformer_torch_input(
         {k: np.ascontiguousarray(v.detach().cpu().numpy()) for k, v in inputs_pytorch.items()}
     )
     return inputs_pytorch, inputs_onnx
+
+
+def parse_torch_input(
+    shape: Tuple[int], batch_size: int
+) -> Tuple[OrderedDictType[str, torch.Tensor], OrderedDictType[str, np.ndarray]]:
+    """Get model input as torch and onnx.
+
+    This is used to create torch and onnx model input configuration.
+
+    Parameters
+    ----------
+    seq_len: int
+        Transformer model sequence length.
+    include_token_ids: bool
+        Check if need return the token ids also.
+
+    Returns
+    ----------
+    Tuple[Tuple[Dict[str, Tensor]], Tuple[Dict[str, Tensor]]]
+        A tuple of same shape for torch and onnx.
+    """
+    shape = (batch_size,) + shape
+    inputs_pytorch: OrderedDict[str, torch.Tensor] = OrderedDict()
+    inputs_pytorch["input"] = torch.randint(high=100, size=shape, dtype=torch.long).type(torch.float)
+    inputs_onnx: OrderedDict[str, np.ndarray] = OrderedDict(
+        {k: np.ascontiguousarray(v.detach().cpu().numpy()) for k, v in inputs_pytorch.items()}
+    )
+    return inputs_pytorch, inputs_onnx
