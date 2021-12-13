@@ -1,5 +1,4 @@
-from fast_deploy.templates.transformer_triton import TransformersConfiguration
-from fast_deploy.templates.generic_triton import transformers_configuration, transformers_configuration2
+from fast_deploy.triton_template import transformers_configuration
 
 from transformers import pipeline
 
@@ -34,20 +33,9 @@ transformers_convert_pytorch(
     model=pipe_model, output_path=onnx_model_path, inputs_pytorch=inputs_pytorch, verbose=False
 )
 
-conf = TransformersConfiguration(
-    model_name='test_model',
-    batch_size=0,
-    nb_output=output_pytorch.shape[1],
-    nb_instance=1,
-    include_token_type=True,
-    workind_directory='/home/rodrigo/triton_test/',
-    use_cuda=False,
-)
-conf.create_folders(tokenizer=pipe_tokenizer, model_path=onnx_model_path)
-
 pipe_tokenizer.save_pretrained(str(tokenizer_path))
 
-transformers_configuration2(
+transformers_configuration(
     model_name="test_model",
     batch_size=0,
     nb_output_shape=[-1, output_pytorch.shape[-1]],

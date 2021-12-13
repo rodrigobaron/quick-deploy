@@ -4,6 +4,13 @@ from typing import Dict
 import numpy as np
 import triton_python_backend_utils as pb_utils
 from transformers import AutoTokenizer, PreTrainedTokenizer, TensorType
+from scipy.special import softmax
+
+
+def topK(x, k, axis=0):
+    idx = np.argpartition(x, -k)[:,-k:]
+    indices = idx[:, np.argsort((-x)[:, idx][0])][0]
+    return indices
 
 
 class TritonPythonModel:
@@ -58,7 +65,37 @@ class TritonPythonModel:
                 token_type_ids = pb_utils.Tensor("token_type_ids", tokens["token_type_ids"])
                 outputs.append(token_type_ids)
 
-            inference_response = pb_utils.InferenceResponse(output_tensors=outputs)
-            responses.append(inference_response)
+            inference_request = pb_utils.InferenceRequest(
+                model_name='test_model',
+                requested_output_names=['output'],
+                inputs=outputs
+            )
+
+            inference_response = inference_request.exec()
+
+            # Check if the inference response has an error
+            if inference_response.has_error():
+                raise pb_utils.TritonModelException(inference_response.error().message())
+            else:
+                # Extract the output tensors from the inference response.
+                token_logits = pb_utils.get_output_tensor_by_name(inference_response, 'output').as_numpy()
+                mask_token_index = np.where(tokens['input_ids']  == self.tokenizer.mask_token_id)[1]
+                mask_token_logits = token_logits[0, mask_token_index, :]
+                mask_token_logits = softmax(mask_token_logits, axis=1)
+
+                top_5_indices = topK(mask_token_logits, 5, axis=1)
+                top_5_values = mask_token_logits[:,top_5_indices][0]
+
+                top_5_tokens = zip(top_5_indices[0].tolist(), top_5_values[0].tolist())
+                # text_output = pb_utils.Tensor("TEXT_OUTPUT", np.array([t.encode() for t in self.tokenizer.decode([[k] for k in top_5_indices[0].tolist()])]))
+
+                text_output_bytes = []
+                for token, score in top_5_tokens:
+                    text_output_bytes.append(self.tokenizer.decode([token]).encode())
+                #     print(text.replace(tokenizer.mask_token, tokenizer.decode([token])), f"(score: {score})")
+
+                text_output = pb_utils.Tensor("TEXT_OUTPUT", np.array(text_output_bytes))
+                inference_response = pb_utils.InferenceResponse(output_tensors=[text_output])
+                responses.append(inference_response)
 
         return responses
