@@ -10,7 +10,7 @@ from fast_deploy.backend.transformers_ort import (
     transformers_convert_pytorch,
     transformers_optimize_onnx,
 )
-from fast_deploy.templates.transformer_triton import TransformersConfiguration
+from fast_deploy.triton_template import TritonIOTypeConf, TritonIOConf, TritonModelConf
 from fast_deploy.utils import get_provider, parse_transformer_torch_input, parse_torch_input, setup_logging
 
 
@@ -71,17 +71,49 @@ def main_transformers(args):
         onnx_model = create_model_for_provider(path=onnx_optim_model_path, provider_to_use=provider_to_use)
         output_onnx_optimised = onnx_model.run(None, inputs_onnx)
         assert np.allclose(a=output_onnx_optimised, b=output_pytorch, atol=args.atol)
+        
+    input_ids = TritonIOConf(
+        name='input_ids',
+        data_type=TritonIOTypeConf.INT64,
+        dims=[-1, -1]
+    )
 
-    conf = TransformersConfiguration(
+    token_type_ids= TritonIOConf(
+        name='token_type_ids',
+        data_type=TritonIOTypeConf.INT64,
+        dims=[-1, -1]
+    )
+
+    attention_mask= TritonIOConf(
+        name='attention_mask',
+        data_type=TritonIOTypeConf.INT64,
+        dims=[-1, -1]
+    )
+
+    output_shape = [-1 for _ in output_pytorch.shape[:-1]]
+    output_shape = output_shape + [output_pytorch.shape[-1]]
+    output= TritonIOConf(
+        name='output',
+        data_type=TritonIOTypeConf.FP32,
+        dims=output_shape
+    )
+
+    model_input = [input_ids, attention_mask]
+    model_output = [output]
+
+    if include_token_ids:
+        model_input.insert(1, token_type_ids)
+
+    model_conf = TritonModelConf(
+        workind_directory=args.output,
         model_name=args.name,
         batch_size=0,
-        nb_output=output_pytorch.shape[1],
         nb_instance=1,
-        include_token_type=include_token_ids,
-        workind_directory=args.output,
         use_cuda=args.cuda,
+        model_inputs=model_input,
+        model_outputs=model_output
     )
-    conf.create_folders(tokenizer=pipe_tokenizer, model_path=onnx_optim_model_path)
+    model_conf.write(onnx_optim_model_path)
 
 
 def main_torch(args):
@@ -178,7 +210,6 @@ def main():
     parser_torch.set_defaults(func=main_torch)
 
     args = parser.parse_args()
-    # import pdb; pdb.set_trace()
     setup_logging(level=logging.INFO if args.verbose else logging.WARNING)
 
     Path(args.output).mkdir(parents=True, exist_ok=True)

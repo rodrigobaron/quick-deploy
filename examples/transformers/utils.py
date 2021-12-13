@@ -59,25 +59,3 @@ class OnnxPerformanceBenchmark(LMPerformanceBenchmark):
         size_mb = Path(self.model_path).stat().st_size / (1024 * 1024)
         print(f"Model size (MB) - {size_mb:.2f}")
         return {"size_mb": size_mb}
-
-
-pipe = pipeline("text-classification", "bert-base-uncased")
-dataset = [{"text": "The goal of life is [MASK]."}]
-
-lmpb = LMPerformanceBenchmark(pipe, dataset)
-lmpb.run_benchmark()
-
-onnx_model_path = Path("env/transformer_my-bert-base.onnx").as_posix()
-onnx_quantized_model_path = Path("env/transformer_my-bert-base.optim.onnx").as_posix()
-
-onnx_model = create_model_for_provider(onnx_model_path, provider_to_use="CPUExecutionProvider")
-pipe_onnx = OnnxPipeline(onnx_model, pipe.tokenizer)
-pb_onnx = OnnxPerformanceBenchmark(pipe_onnx, dataset, model_path=onnx_model_path, name="Onnx")
-pb_onnx.run_benchmark()
-
-onnx_quantized_model = create_model_for_provider(onnx_quantized_model_path, provider_to_use="CPUExecutionProvider")
-pipe_quant_onnx = OnnxPipeline(onnx_quantized_model, pipe.tokenizer)
-pb_quant_onnx = OnnxPerformanceBenchmark(
-    pipe_quant_onnx, dataset, model_path=onnx_quantized_model_path, name="Optimized Onnx"
-)
-pb_quant_onnx.run_benchmark()
