@@ -10,12 +10,12 @@ This is under development, we will keep adding more examples and expanding the t
 - [ ]  gpt transformers pytorch  
 - [ ]  t5 transformers pytorch  
 - [ ]  custom bert transformer pytorch implementation  
-- [ ]  timms model  
-- [ ]  custom resnet model pytorch  
+- [x]  ~~timms model~~  
+- [x]  ~~custom resnet model pytorch~~  
 - [ ]  YoloV4 model  
 - [ ]  bert transformers tensorflow  
 - [ ]  custom resnet model tensorflow
-- [ ]  SKLearn model  
+- [x]  ~~SKLearn model~~  
 - [ ]  CoreML model  
 - [ ]  LightGBM model  
 - [ ]  XGBoost model  

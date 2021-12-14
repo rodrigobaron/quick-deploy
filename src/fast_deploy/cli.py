@@ -5,12 +5,16 @@ from pathlib import Path
 import numpy as np
 import torch
 import yaml
+import pickle
 
 from fast_deploy.backend.common import create_model_for_provider, generic_optimize_onnx
 from fast_deploy.backend.transformers_ort import (
     transformers_convert_pytorch,
     transformers_optimize_onnx,
 )
+from fast_deploy.backend.torch_ort import torch_convert_pytorch
+from fast_deploy.backend.skl_ort import parse_skl_input, skl_convert_onnx
+
 from fast_deploy.triton_template import TritonIOTypeConf, TritonIOConf, TritonModelConf
 from fast_deploy.utils import get_provider, parse_transformer_torch_input, parse_torch_input, setup_logging
 
@@ -158,8 +162,6 @@ def main_torch(args):
     onnx_model_path = Path(f"{args.workdir}/torch_{args.name}.onnx").as_posix()
     onnx_optim_model_path = Path(f"{args.workdir}/torch_{args.name}.optim.onnx").as_posix()
 
-    from fast_deploy.backend.torch_ort import torch_convert_pytorch
-
     torch_convert_pytorch(
         model=torch_model, output_path=onnx_model_path, inputs_pytorch=inputs_pytorch, verbose=args.verbose
     )
@@ -185,6 +187,60 @@ def main_torch(args):
         model_outputs=model_output
     )
     model_conf.write(onnx_optim_model_path)
+
+
+def main_skl(args):
+    with open(args.model, "rb") as p_file:
+        model = pickle.load(p_file)
+
+    with open(args.file, "r") as stream:
+        io_conf = yaml.safe_load(stream)
+
+    assert "IOSchema" == io_conf['kind']
+
+    model_input = []
+    initial_type = []
+    for m_input in io_conf['inputs']:
+        t_conf = TritonIOConf(
+            name=m_input['name'],
+            data_type=TritonIOTypeConf.from_str(m_input['dtype']),
+            dims=[-1] + m_input['shape']
+        )
+        model_input.append(t_conf)
+        initial_type.append(
+            (
+                m_input['name'], 
+                parse_skl_input([None] + m_input['shape'], m_input['dtype'])
+            )
+        )
+    
+    model_output = []
+    for m_output in io_conf['outputs']:
+        t_conf = TritonIOConf(
+            name=m_output['name'],
+            data_type=TritonIOTypeConf.from_str(m_output['dtype']),
+            dims=m_output['shape']
+        )
+        model_output.append(t_conf)
+
+    Path(args.workdir).mkdir(parents=True, exist_ok=True)
+    onnx_model_path = Path(f"{args.workdir}/skl_{args.name}.onnx").as_posix()
+
+    skl_convert_onnx(
+        model=model, output_path=onnx_model_path, inputs_type=initial_type, verbose=args.verbose
+    )
+
+    model_conf = TritonModelConf(
+        workind_directory=args.output,
+        model_name=args.name,
+        batch_size=0,
+        nb_instance=1,
+        use_cuda=False,
+        model_inputs=model_input,
+        model_outputs=model_output
+    )
+    model_conf.write(onnx_model_path)
+
 
 def default_args(parser):
     parser.add_argument("-n", "--name", required=True, help="model name")
@@ -216,6 +272,12 @@ def transformers_args(parser_tra):
     parser_tra.set_defaults(func=main_transformers)
 
 
+def torch_args(parser_torch):
+    parser_torch.add_argument("-f", "--file", required=True, help="model IO configuration.")
+    parser_torch.add_argument("--no-quant", action="store_true", help="avoid quant optimization")
+    parser_torch.set_defaults(func=main_torch)
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Optimize and deploy machine learning models fast as possible!",
@@ -232,9 +294,14 @@ def main():
     # torch arguments and func binding
     parser_torch = subparsers.add_parser("torch")
     default_args(parser_torch)
-    parser_torch.add_argument("-f", "--file", required=True, help="model IO configuration.")
-    parser_torch.add_argument("--no-quant", action="store_true", help="avoid quant optimization")
-    parser_torch.set_defaults(func=main_torch)
+    torch_args(parser_torch)
+
+    # sklearn arguments and func binding
+    parser_skl = subparsers.add_parser("sklearn")
+    default_args(parser_skl)
+    parser_skl.add_argument("-f", "--file", required=True, help="model IO configuration.")
+    parser_skl.set_defaults(func=main_skl)
+    
 
     args = parser.parse_args()
     setup_logging(level=logging.INFO if args.verbose else logging.WARNING)
