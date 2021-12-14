@@ -4,6 +4,7 @@ from pathlib import Path
 
 import numpy as np
 import torch
+import yaml
 
 from fast_deploy.backend.common import create_model_for_provider, generic_optimize_onnx
 from fast_deploy.backend.transformers_ort import (
@@ -123,7 +124,30 @@ def main_torch(args):
 
     torch_model.eval()
 
-    input_shape = tuple([int(k.strip()) for k in args.input_shape.split(",")])
+    with open(args.file, "r") as stream:
+        io_conf = yaml.safe_load(stream)
+
+    assert "IOSchema" == io_conf['kind']
+
+    model_input = []
+    for m_input in io_conf['inputs']:
+        t_conf = TritonIOConf(
+            name=m_input['name'],
+            data_type=TritonIOTypeConf.from_str(m_input['dtype']),
+            dims=[-1] + m_input['shape']
+        )
+        model_input.append(t_conf)
+    
+    model_output = []
+    for m_output in io_conf['outputs']:
+        t_conf = TritonIOConf(
+            name=m_output['name'],
+            data_type=TritonIOTypeConf.from_str(m_output['dtype']),
+            dims=[-1] + m_output['shape']
+        )
+        model_output.append(t_conf)
+
+    input_shape = tuple(model_input[-1].dims[1:])
     inputs_pytorch, inputs_onnx = parse_torch_input(shape=input_shape, batch_size=1)
 
     with torch.inference_mode():
@@ -146,19 +170,21 @@ def main_torch(args):
         output_onnx = onnx_model.run(None, inputs_onnx)
         assert np.allclose(a=output_onnx, b=output_pytorch, atol=args.atol)
 
-    generic_optimize_onnx(onnx_path=onnx_model_path, output_path=onnx_optim_model_path)
-
-    conf = GenericConfiguration(
+    if args.no_quant:
+        onnx_optim_model_path = onnx_model_path
+    else:
+        generic_optimize_onnx(onnx_path=onnx_model_path, output_path=onnx_optim_model_path)
+    
+    model_conf = TritonModelConf(
+        workind_directory=args.output,
         model_name=args.name,
         batch_size=0,
-        nb_output=output_pytorch.shape[1],
         nb_instance=1,
-        include_token_type=include_token_ids,
-        workind_directory=args.output,
         use_cuda=args.cuda,
+        model_inputs=model_input,
+        model_outputs=model_output
     )
-    conf.create_folders(model_path=onnx_optim_model_path)
-
+    model_conf.write(onnx_optim_model_path)
 
 def default_args(parser):
     parser.add_argument("-n", "--name", required=True, help="model name")
@@ -206,7 +232,8 @@ def main():
     # torch arguments and func binding
     parser_torch = subparsers.add_parser("torch")
     default_args(parser_torch)
-    parser_torch.add_argument("--input-shape", required=True, help="model shape. eg: 3, 256, 256")
+    parser_torch.add_argument("-f", "--file", required=True, help="model IO configuration.")
+    parser_torch.add_argument("--no-quant", action="store_true", help="avoid quant optimization")
     parser_torch.set_defaults(func=main_torch)
 
     args = parser.parse_args()

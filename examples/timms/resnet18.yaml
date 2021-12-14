@@ -1,0 +1,9 @@
+kind: IOSchema
+inputs:
+  - name: input
+    dtype: float32
+    shape: [3, 224, 224]
+outputs:
+  - name: output
+    shape: [1000]
+    dtype: float32

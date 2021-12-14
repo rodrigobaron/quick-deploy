@@ -12,6 +12,18 @@ class TritonIOTypeConf(Enum):
     FP32 = 'TYPE_FP32'
     INT64 = 'TYPE_INT64'
 
+    @classmethod
+    def from_str(cls, content):
+        content = content.lower().strip()
+        if 'string' == content:
+            return TritonIOTypeConf.STRING
+        if 'float32' == content:
+            return TritonIOTypeConf.FP32
+        if 'int64' == content:
+            return TritonIOTypeConf.INT64
+        
+        raise ValueError
+
 
 class TritonIOConf:
     name: str
