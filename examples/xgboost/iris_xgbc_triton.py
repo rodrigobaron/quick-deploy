@@ -5,19 +5,23 @@ from sklearn.datasets import load_iris
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 
+
 iris = load_iris()
 X, y = iris.data, iris.target
 X_train, X_test, y_train, y_test = train_test_split(X, y)
 
-model_name = "iris_cls"
+
+model_name = "iris_xgbc"
 url = "127.0.0.1:8000"
 model_version = "1"
 batch_size = 1
+
 
 triton_client = tritonclient.http.InferenceServerClient(url=url, verbose=False)
 assert triton_client.is_model_ready(
     model_name=model_name, model_version=model_version
 ), f"model {model_name} not yet ready"
+
 
 model_input = tritonclient.http.InferInput(name="input", shape=(batch_size, 4), datatype="FP32")
 model_label = tritonclient.http.InferRequestedOutput(name="label", binary_data=False)

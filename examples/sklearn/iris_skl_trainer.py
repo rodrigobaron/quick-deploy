@@ -13,7 +13,6 @@ clr.predict_proba = None
 
 with open("iris_cls.bin", "wb") as p_file:
     pickle.dump(clr, p_file)
-import pdb; pdb.set_trace()
 
 import onnxruntime as rt
 import numpy
@@ -21,4 +20,3 @@ sess = rt.InferenceSession("models/iris_cls/iris_cls/1/model.bin")
 input_name = sess.get_inputs()[0].name
 label_name = sess.get_outputs()[0].name
 pred_onx = sess.run([label_name], {input_name: X_test.astype(numpy.float32)})[0]
-import pdb; pdb.set_trace()

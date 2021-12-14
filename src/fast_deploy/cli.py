@@ -14,6 +14,7 @@ from fast_deploy.backend.transformers_ort import (
 )
 from fast_deploy.backend.torch_ort import torch_convert_pytorch
 from fast_deploy.backend.skl_ort import parse_skl_input, skl_convert_onnx
+from fast_deploy.backend.xgb_ort import parse_xgb_input, xgb_convert_onnx
 
 from fast_deploy.triton_template import TritonIOTypeConf, TritonIOConf, TritonModelConf
 from fast_deploy.utils import get_provider, parse_transformer_torch_input, parse_torch_input, setup_logging
@@ -242,6 +243,59 @@ def main_skl(args):
     model_conf.write(onnx_model_path)
 
 
+def main_xgb(args):
+    with open(args.model, "rb") as p_file:
+        model = pickle.load(p_file)
+
+    with open(args.file, "r") as stream:
+        io_conf = yaml.safe_load(stream)
+
+    assert "IOSchema" == io_conf['kind']
+
+    model_input = []
+    initial_type = []
+    for m_input in io_conf['inputs']:
+        t_conf = TritonIOConf(
+            name=m_input['name'],
+            data_type=TritonIOTypeConf.from_str(m_input['dtype']),
+            dims=[-1] + m_input['shape']
+        )
+        model_input.append(t_conf)
+        initial_type.append(
+            (
+                m_input['name'], 
+                parse_xgb_input([None] + m_input['shape'], m_input['dtype'])
+            )
+        )
+    
+    model_output = []
+    for m_output in io_conf['outputs']:
+        t_conf = TritonIOConf(
+            name=m_output['name'],
+            data_type=TritonIOTypeConf.from_str(m_output['dtype']),
+            dims=m_output['shape']
+        )
+        model_output.append(t_conf)
+
+    Path(args.workdir).mkdir(parents=True, exist_ok=True)
+    onnx_model_path = Path(f"{args.workdir}/xgb_{args.name}.onnx").as_posix()
+
+    xgb_convert_onnx(
+        model=model, output_path=onnx_model_path, inputs_type=initial_type, verbose=args.verbose
+    )
+
+    model_conf = TritonModelConf(
+        workind_directory=args.output,
+        model_name=args.name,
+        batch_size=0,
+        nb_instance=1,
+        use_cuda=False,
+        model_inputs=model_input,
+        model_outputs=model_output
+    )
+    model_conf.write(onnx_model_path)
+
+
 def default_args(parser):
     parser.add_argument("-n", "--name", required=True, help="model name")
     parser.add_argument("-m", "--model", required=True, help="model path")
@@ -301,6 +355,12 @@ def main():
     default_args(parser_skl)
     parser_skl.add_argument("-f", "--file", required=True, help="model IO configuration.")
     parser_skl.set_defaults(func=main_skl)
+
+    # xgboost arguments and func binding
+    parser_xgb = subparsers.add_parser("xgboost")
+    default_args(parser_xgb)
+    parser_xgb.add_argument("-f", "--file", required=True, help="model IO configuration.")
+    parser_xgb.set_defaults(func=main_xgb)
     
 
     args = parser.parse_args()
