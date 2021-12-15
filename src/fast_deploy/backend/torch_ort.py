@@ -3,7 +3,7 @@ import torch
 from typing import OrderedDict
 
 
-def torch_convert_pytorch(
+def torch_convert_onnx(
     model: torch.nn.Module,
     output_path: str,
     inputs_pytorch: OrderedDict[str, torch.Tensor],

@@ -10,54 +10,78 @@ import pickle
 from fast_deploy.backend.common import create_model_for_provider, generic_optimize_onnx
 from fast_deploy.backend.transformers_ort import (
     transformers_convert_pytorch,
+    transformers_convert_tf,
     transformers_optimize_onnx,
 )
-from fast_deploy.backend.torch_ort import torch_convert_pytorch
+from fast_deploy.backend.torch_ort import torch_convert_onnx
 from fast_deploy.backend.skl_ort import parse_skl_input, skl_convert_onnx
 from fast_deploy.backend.xgb_ort import parse_xgb_input, xgb_convert_onnx
 
 from fast_deploy.triton_template import TritonIOTypeConf, TritonIOConf, TritonModelConf
-from fast_deploy.utils import get_provider, parse_transformer_torch_input, parse_torch_input, setup_logging
+from fast_deploy.utils import (
+    get_provider, 
+    parse_transformer_torch_input,
+    parse_torch_input,
+    parse_transformer_tf_input, 
+    parse_tf_input, 
+    setup_logging
+)
 
 
 def main_transformers(args):
     from transformers import pipeline
+    
+    Path(args.workdir).mkdir(parents=True, exist_ok=True)
+    onnx_model_path = Path(f"{args.workdir}/transformer_{args.name}.onnx").as_posix()
+    onnx_optim_model_path = Path(f"{args.workdir}/transformer_{args.name}.optim.onnx").as_posix()
 
     provider_to_use = get_provider(args)
 
-    pipe = pipeline(args.pipeline, model=args.model, tokenizer=args.tokenizer)
+    pipe = pipeline(args.pipeline, model=args.model, tokenizer=args.tokenizer, framework=args.framework)
     pipe_tokenizer = pipe.tokenizer
     pipe_model = pipe.model
 
     if args.cuda:
         pipe_model.cuda()
 
-    pipe_model.eval()
     input_names = pipe_tokenizer.model_input_names
     include_token_ids = "token_type_ids" in input_names
 
-    inputs_pytorch, inputs_onnx = parse_transformer_torch_input(
-        batch_size=1, seq_len=args.seq_len, include_token_ids=include_token_ids
-    )
+    if "pt" == args.framework:
+        pipe_model.eval()
+        inputs_pytorch, inputs_onnx = parse_transformer_torch_input(
+            batch_size=1, seq_len=args.seq_len, include_token_ids=include_token_ids
+        )
 
-    with torch.inference_mode():
-        output = pipe_model(**inputs_pytorch)
+        with torch.inference_mode():
+            output = pipe_model(**inputs_pytorch)
+            output = output.logits
+            output_np: np.ndarray = output.detach().cpu().numpy()
+
+        transformers_convert_pytorch(
+            model=pipe_model, output_path=onnx_model_path, inputs_pytorch=inputs_pytorch, verbose=args.verbose
+        )
+    elif "tf" == args.framework:
+        inputs_tf, inputs_onnx = parse_transformer_tf_input(
+            batch_size=1, seq_len=args.seq_len, include_token_ids=include_token_ids
+        )
+
+        output = pipe_model(inputs_tf)
         output = output.logits
-        output_pytorch: np.ndarray = output.detach().cpu().numpy()
+        output_np: np.ndarray = output.numpy()
 
-    Path(args.workdir).mkdir(parents=True, exist_ok=True)
-    onnx_model_path = Path(f"{args.workdir}/transformer_{args.name}.onnx").as_posix()
-    onnx_optim_model_path = Path(f"{args.workdir}/transformer_{args.name}.optim.onnx").as_posix()
+        transformers_convert_tf(
+            model=pipe_model, output_path=onnx_model_path, inputs_tf=inputs_tf, verbose=args.verbose
+        )
+    else:
+        raise ValueError
 
-    transformers_convert_pytorch(
-        model=pipe_model, output_path=onnx_model_path, inputs_pytorch=inputs_pytorch, verbose=args.verbose
-    )
     del pipe_model
 
     if args.atol is not None:
         onnx_model = create_model_for_provider(path=onnx_model_path, provider_to_use=provider_to_use)
         output_onnx = onnx_model.run(None, inputs_onnx)
-        assert np.allclose(a=output_onnx, b=output_pytorch, atol=args.atol)
+        assert np.allclose(a=output_onnx, b=output_np, atol=args.atol)
 
     to_optimize: str = onnx_model_path
     if args.model_type is not None:
@@ -76,7 +100,7 @@ def main_transformers(args):
     if args.atol is not None:
         onnx_model = create_model_for_provider(path=onnx_optim_model_path, provider_to_use=provider_to_use)
         output_onnx_optimised = onnx_model.run(None, inputs_onnx)
-        assert np.allclose(a=output_onnx_optimised, b=output_pytorch, atol=args.atol)
+        assert np.allclose(a=output_onnx_optimised, b=output_np, atol=args.atol)
         
     input_ids = TritonIOConf(
         name='input_ids',
@@ -96,8 +120,8 @@ def main_transformers(args):
         dims=[-1, -1]
     )
 
-    output_shape = [-1 for _ in output_pytorch.shape[:-1]]
-    output_shape = output_shape + [output_pytorch.shape[-1]]
+    output_shape = [-1 for _ in output_np.shape[:-1]]
+    output_shape = output_shape + [output_np.shape[-1]]
     output= TritonIOConf(
         name='output',
         data_type=TritonIOTypeConf.FP32,
@@ -157,13 +181,13 @@ def main_torch(args):
 
     with torch.inference_mode():
         output = torch_model(inputs_pytorch['input'])
-        output_pytorch: np.ndarray = output.detach().cpu().numpy()
+        output_np: np.ndarray = output.detach().cpu().numpy()
 
     Path(args.workdir).mkdir(parents=True, exist_ok=True)
     onnx_model_path = Path(f"{args.workdir}/torch_{args.name}.onnx").as_posix()
     onnx_optim_model_path = Path(f"{args.workdir}/torch_{args.name}.optim.onnx").as_posix()
 
-    torch_convert_pytorch(
+    torch_convert_onnx(
         model=torch_model, output_path=onnx_model_path, inputs_pytorch=inputs_pytorch, verbose=args.verbose
     )
     del torch_model
@@ -171,7 +195,7 @@ def main_torch(args):
     if args.atol is not None:
         onnx_model = create_model_for_provider(path=onnx_model_path, provider_to_use=provider_to_use)
         output_onnx = onnx_model.run(None, inputs_onnx)
-        assert np.allclose(a=output_onnx, b=output_pytorch, atol=args.atol)
+        assert np.allclose(a=output_onnx, b=output_np, atol=args.atol)
 
     if args.no_quant:
         onnx_optim_model_path = onnx_model_path
@@ -313,6 +337,13 @@ def transformers_args(parser_tra):
         "--model-type",
         help="custom optimization for transformer model type. One of [bert, bart, gpt2]",
         choices=["bert", "bart", "gpt2"],
+    )
+    parser_tra.add_argument(
+        "--framework",
+        type=str,
+        choices=["pt", "tf"],
+        default="pt",
+        help="Framework for loading the model",
     )
     parser_tra.add_argument("--num-heads", default=0, help="number of heads (not needed for bert)", type=int)
     parser_tra.add_argument("--hidden-size", default=0, help="the weights size (not needed for bert)", type=int)

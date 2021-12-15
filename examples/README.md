@@ -18,7 +18,7 @@ This is under development, we will keep adding more examples and expanding the t
 - [x]  ~~SKLearn model~~  
 - [ ]  CoreML model  
 - [ ]  LightGBM model  
-- [ ]  XGBoost model  
+- [x]  ~~XGBoost model~~  
 - [ ]  LibSVM model  
 
 

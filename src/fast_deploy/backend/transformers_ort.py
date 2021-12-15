@@ -2,9 +2,11 @@ import logging
 from typing import OrderedDict
 
 import torch
+import tensorflow as tf
+
 from onnxruntime.transformers import optimizer
 from onnxruntime.transformers.fusion_options import FusionOptions
-
+import tf2onnx
 
 def transformers_convert_pytorch(
     model: torch.nn.Module,
@@ -46,6 +48,36 @@ def transformers_convert_pytorch(
             dynamic_axes=dynamic_axis,
             verbose=verbose,
         )
+
+
+def transformers_convert_tf(
+    model: tf.keras.Model,
+    output_path: str,
+    inputs_tf: OrderedDict[str, tf.Tensor],
+    opset_version: int = 12,
+    verbose: bool = False,
+) -> None:
+    """Convert an tensorflow tansformer model to onnx.
+
+    This model conversion is specific for transformers.
+
+    Parameters
+    ----------
+    model: torch.nn.Module
+        the tensorflow model to convert to.
+    output_path: str
+        the onnx output filepath
+    inputs_tf: OrderedDict[str, torch.Tensor]
+        the model inputs
+    opset_version: int
+        the onnx op version to use. Default is 12.
+    verbose: bool
+        show detailed logging. Defaul is False.
+    """
+    spec = tuple([
+        tf.TensorSpec((None,) + v.shape[1:], v.dtype, name=k)
+     for k, v in inputs_tf.items()])
+    tf2onnx.convert.from_keras(model, input_signature=spec, opset=opset_version, output_path=output_path)
 
 
 def transformers_optimize_onnx(
