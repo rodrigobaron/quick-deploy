@@ -3,26 +3,20 @@ import logging
 from pathlib import Path
 
 import numpy as np
-import torch
 import yaml
 import pickle
 
-from fast_deploy.backend.common import create_model_for_provider, generic_optimize_onnx
-from fast_deploy.backend.transformers_ort import (
-    transformers_convert_pytorch,
-    transformers_convert_tf,
-    transformers_optimize_onnx,
+from fast_deploy.triton_template import (
+    TritonIOTypeConf,
+    TritonIOConf,
+    TritonModelConf
 )
-from fast_deploy.backend.torch_ort import torch_convert_onnx
-from fast_deploy.backend.skl_ort import parse_skl_input, skl_convert_onnx
-from fast_deploy.backend.xgb_ort import parse_xgb_input, xgb_convert_onnx
 
-from fast_deploy.triton_template import TritonIOTypeConf, TritonIOConf, TritonModelConf
 from fast_deploy.utils import (
     get_provider, 
     parse_transformer_torch_input,
-    parse_torch_input,
     parse_transformer_tf_input, 
+    parse_torch_input,
     parse_tf_input, 
     setup_logging
 )
@@ -30,6 +24,11 @@ from fast_deploy.utils import (
 
 def main_transformers(args):
     from transformers import pipeline
+    from fast_deploy.backend.transformers_ort import (
+        transformers_convert_pytorch,
+        transformers_convert_tf,
+        transformers_optimize_onnx,
+    )
     
     Path(args.workdir).mkdir(parents=True, exist_ok=True)
     onnx_model_path = Path(f"{args.workdir}/transformer_{args.name}.onnx").as_posix()
@@ -147,6 +146,9 @@ def main_transformers(args):
 
 
 def main_torch(args):
+    import torch
+    from fast_deploy.backend.torch_ort import torch_convert_onnx
+
     torch_model = torch.load(args.model)
     if args.cuda:
         torch_model.cuda()
@@ -215,6 +217,11 @@ def main_torch(args):
 
 
 def main_skl(args):
+    from fast_deploy.backend.skl_ort import (
+        parse_skl_input,
+        skl_convert_onnx
+    )
+
     with open(args.model, "rb") as p_file:
         model = pickle.load(p_file)
 
@@ -268,6 +275,11 @@ def main_skl(args):
 
 
 def main_xgb(args):
+    from fast_deploy.backend.xgb_ort import (
+        parse_xgb_input,
+        xgb_convert_onnx
+    )
+
     with open(args.model, "rb") as p_file:
         model = pickle.load(p_file)
 
