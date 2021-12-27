@@ -23,6 +23,7 @@ from fast_deploy.utils import (
 
 
 def main_transformers(args):
+    """Command to parse transformers models"""
     from transformers import pipeline
     from fast_deploy.backend.transformers_ort import (
         transformers_convert_pytorch,
@@ -146,6 +147,7 @@ def main_transformers(args):
 
 
 def main_torch(args):
+    """Command to parse torch models"""
     import torch
     from fast_deploy.backend.torch_ort import torch_convert_onnx
 
@@ -217,6 +219,7 @@ def main_torch(args):
 
 
 def main_skl(args):
+    """Command to parse sklearn models."""
     from fast_deploy.backend.skl_ort import (
         parse_skl_input,
         skl_convert_onnx
@@ -275,6 +278,7 @@ def main_skl(args):
 
 
 def main_xgb(args):
+    """Command to parse xgboost models."""
     from fast_deploy.backend.xgb_ort import (
         parse_xgb_input,
         xgb_convert_onnx
@@ -333,6 +337,7 @@ def main_xgb(args):
 
 
 def default_args(parser):
+    """Parse common arguments between commands."""
     parser.add_argument("-n", "--name", required=True, help="model name")
     parser.add_argument("-m", "--model", required=True, help="model path")
     parser.add_argument("-o", "--output", required=True, help="path used to export models")
@@ -344,6 +349,7 @@ def default_args(parser):
 
 
 def transformers_args(parser_tra):
+    """Parse transformers arguments."""
     parser_tra.add_argument("-t", "--tokenizer", help="tokenizer path")
     parser_tra.add_argument(
         "--model-type",
@@ -370,12 +376,14 @@ def transformers_args(parser_tra):
 
 
 def torch_args(parser_torch):
+    """Parse torch arguments."""
     parser_torch.add_argument("-f", "--file", required=True, help="model IO configuration.")
     parser_torch.add_argument("--no-quant", action="store_true", help="avoid quant optimization")
     parser_torch.set_defaults(func=main_torch)
 
 
 def main():
+    """Entry-point function."""
     parser = argparse.ArgumentParser(
         description="Optimize and deploy machine learning models fast as possible!",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
