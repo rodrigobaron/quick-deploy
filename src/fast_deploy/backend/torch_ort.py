@@ -1,6 +1,6 @@
-import torch
-
 from typing import OrderedDict
+
+import torch
 
 
 def torch_convert_onnx(

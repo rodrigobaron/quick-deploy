@@ -1,38 +1,18 @@
 import mock
 import pytest
 
-from fast_deploy.triton_template import (
-    TritonIOTypeConf,
-    TritonIOConf,
-    TritonModelConf
-)
+from fast_deploy.triton_template import TritonIOConf, TritonIOTypeConf, TritonModelConf
 
 
 @pytest.fixture
 def conf():
-    input_ids = TritonIOConf(
-        name='input_ids',
-        data_type=TritonIOTypeConf.INT64,
-        dims=[-1, -1]
-    )
+    input_ids = TritonIOConf(name='input_ids', data_type=TritonIOTypeConf.INT64, dims=[-1, -1])
 
-    token_type_ids= TritonIOConf(
-        name='token_type_ids',
-        data_type=TritonIOTypeConf.INT64,
-        dims=[-1, -1]
-    )
+    token_type_ids = TritonIOConf(name='token_type_ids', data_type=TritonIOTypeConf.INT64, dims=[-1, -1])
 
-    attention_mask= TritonIOConf(
-        name='attention_mask',
-        data_type=TritonIOTypeConf.INT64,
-        dims=[-1, -1]
-    )
+    attention_mask = TritonIOConf(name='attention_mask', data_type=TritonIOTypeConf.INT64, dims=[-1, -1])
 
-    output= TritonIOConf(
-        name='output',
-        data_type=TritonIOTypeConf.FP32,
-        dims=[-1, 10]
-    )
+    output = TritonIOConf(name='output', data_type=TritonIOTypeConf.FP32, dims=[-1, 10])
 
     model_input = [input_ids, token_type_ids, attention_mask]
     model_output = [output]
@@ -44,7 +24,7 @@ def conf():
         nb_instance=1,
         use_cuda=False,
         model_inputs=model_input,
-        model_outputs=model_output
+        model_outputs=model_output,
     )
     return conf
 

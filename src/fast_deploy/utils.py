@@ -1,18 +1,31 @@
 import logging
+import re
 from argparse import Namespace
 from collections import OrderedDict
 from typing import OrderedDict as OrderedDictType
 from typing import Tuple
 
 import numpy as np
-import torch
 import tensorflow as tf
-
-import re
+import torch
 import unidecode
 
 
 def slugify(text):
+    """Make words into an single word lower case word separable by '_'.
+
+    This is used to construct endpoints from models name.
+
+    Parameters
+    ----------
+    text: str
+        Words to be slugify.
+
+    Returns
+    ----------
+    str
+        Words as one word separable by '_'.
+    """
     text = unidecode.unidecode(text).lower()
     return re.sub(r'[\W_]+', '_', text)
 
@@ -88,7 +101,7 @@ def parse_transformer_torch_input(
 
 
 def parse_torch_input(
-    shape: Tuple[int], batch_size: int
+    shape: Tuple[int, ...], batch_size: int
 ) -> Tuple[OrderedDictType[str, torch.Tensor], OrderedDictType[str, np.ndarray]]:
     """Get model input as torch and onnx.
 
@@ -165,9 +178,9 @@ def parse_tf_input(
     Tuple[Tuple[Dict[str, Tensor]], Tuple[Dict[str, Tensor]]]
         A tuple of same shape for tensorflow and onnx.
     """
-    shape = (batch_size,) + shape
+    new_shape: Tuple[int, ...] = (batch_size,) + shape
     inputs_tf: OrderedDict[str, tf.Tensor] = OrderedDict()
-    inputs_tf["input"] = tf.random.uniform(shape=shape, maxval=100, dtype=tf.float32)
+    inputs_tf["input"] = tf.random.uniform(shape=new_shape, maxval=100, dtype=tf.float32)
     inputs_onnx: OrderedDict[str, np.ndarray] = OrderedDict(
         {k: np.ascontiguousarray(v.detach().cpu().numpy()) for k, v in inputs_tf.items()}
     )

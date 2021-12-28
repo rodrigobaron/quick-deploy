@@ -2,9 +2,10 @@ import mock
 
 from fast_deploy.backend.transformers_ort import (
     transformers_convert_pytorch,
+    transformers_convert_tf,
     transformers_optimize_onnx,
 )
-from fast_deploy.utils import parse_transformer_torch_input
+from fast_deploy.utils import parse_transformer_tf_input, parse_transformer_torch_input
 
 
 @mock.patch("fast_deploy.backend.transformers_ort.torch.onnx.export")
@@ -35,6 +36,27 @@ def test_transformers_convert_pytorch(e):
     }
 
     assert dynamic_axes == kwargs["dynamic_axes"]
+
+
+@mock.patch("fast_deploy.backend.transformers_ort.tf2onnx.convert.from_keras")
+def test_transformers_convert_tf(e):
+    pipe_model = mock.Mock()
+
+    inputs_tf, inputs_onnx = parse_transformer_tf_input(batch_size=1, seq_len=16, include_token_ids=True)
+
+    transformers_convert_tf(model=pipe_model, output_path="tmp/path.onnx", inputs_tf=inputs_tf, verbose=False)
+
+    name, args, kwargs = e.mock_calls[0]
+
+    for t in kwargs["input_signature"]:
+        assert (None, 16) == tuple(t.shape)
+
+    assert "tmp/path.onnx" == kwargs["output_path"]
+    assert 12 == kwargs["opset"]
+
+    input_names = [k.name for k in kwargs["input_signature"]]
+    for k in ["input_ids", "token_type_ids", "attention_mask"]:
+        assert k in input_names
 
 
 @mock.patch("fast_deploy.backend.transformers_ort.optimizer.optimize_model")

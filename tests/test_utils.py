@@ -3,7 +3,16 @@ import logging
 import mock
 import pytest
 
-from fast_deploy.utils import get_provider, parse_transformer_torch_input, setup_logging
+from fast_deploy.utils import (
+    get_provider,
+    parse_transformer_torch_input,
+    setup_logging,
+    slugify,
+)
+
+
+def test_slugify():
+    assert "my_model" == slugify("My Model")
 
 
 def test_setup_logging():

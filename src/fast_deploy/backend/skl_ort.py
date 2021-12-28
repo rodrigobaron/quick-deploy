@@ -1,12 +1,12 @@
-from skl2onnx.common.data_types import (
-    FloatTensorType, 
-    Int64TensorType,
-    Int32TensorType,
-    BooleanTensorType,
-    StringTensorType,
-    DoubleTensorType
-)
 from skl2onnx import to_onnx
+from skl2onnx.common.data_types import (
+    BooleanTensorType,
+    DoubleTensorType,
+    FloatTensorType,
+    Int32TensorType,
+    Int64TensorType,
+    StringTensorType,
+)
 
 
 def _str_to_type(content):
@@ -21,7 +21,9 @@ def _str_to_type(content):
         return Int32TensorType
     if 'bool' == content:
         return BooleanTensorType
-    
+    if 'str' == content:
+        return StringTensorType
+
     raise ValueError
 
 

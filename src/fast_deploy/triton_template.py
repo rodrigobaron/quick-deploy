@@ -1,9 +1,9 @@
 import os
 import shutil
-from pathlib import Path
-from abc import ABC
-from typing import List
 from enum import Enum
+from pathlib import Path
+from typing import List
+
 from fast_deploy.utils import slugify
 
 
@@ -21,7 +21,7 @@ class TritonIOTypeConf(Enum):
             return TritonIOTypeConf.FP32
         if 'int64' == content:
             return TritonIOTypeConf.INT64
-        
+
         raise ValueError
 
 
@@ -45,7 +45,7 @@ class TritonModelConf:
         nb_instance: int,
         use_cuda: bool,
         model_inputs: List[TritonIOConf],
-        model_outputs: List[TritonIOConf]
+        model_outputs: List[TritonIOConf],
     ):
         self.model_name = model_name
         self.folder_name = slugify(model_name)
@@ -62,22 +62,22 @@ class TritonModelConf:
 
     def _get_inputs(self):
         inputs_conf = []
-        for input_conf in self.model_inputs:
+        for _input in self.model_inputs:
             input_conf = f"""{{
-        name: "{input_conf.name}"
-        data_type: {input_conf.data_type}
-        dims: {input_conf.dims}
+        name: "{_input.name}"
+        data_type: {_input.data_type}
+        dims: {_input.dims}
     }}"""
             inputs_conf.append(input_conf)
         return ",\n    ".join(inputs_conf)
-    
+
     def _get_outputs(self):
-        outputs_conf = []
-        for output_conf in self.model_outputs:
+        outputs_conf: List[str] = []
+        for output in self.model_outputs:
             output_conf = f"""{{
-        name: "{output_conf.name}"
-        data_type: {output_conf.data_type}
-        dims: {output_conf.dims}
+        name: "{output.name}"
+        data_type: {output.data_type}
+        dims: {output.dims}
     }}"""
             outputs_conf.append(output_conf)
         return ",\n    ".join(outputs_conf)
@@ -91,7 +91,7 @@ instance_group [
     }}
 ]
 """.strip()
-    
+
     def get_conf(self) -> str:
         return f"""
 name: "{self.folder_name}"
@@ -109,7 +109,7 @@ output [
 
 {self._instance_group()}
 """.strip()
-    
+
     def write(self, model_path: str):
         """Create the models files for Triton.
 

@@ -1,36 +1,34 @@
 import argparse
 import logging
+import pickle
 from pathlib import Path
 
 import numpy as np
 import yaml
-import pickle
 
-from fast_deploy.triton_template import (
-    TritonIOTypeConf,
-    TritonIOConf,
-    TritonModelConf
-)
+from fast_deploy.triton_template import TritonIOConf, TritonIOTypeConf, TritonModelConf
 
 from fast_deploy.utils import (
-    get_provider, 
-    parse_transformer_torch_input,
-    parse_transformer_tf_input, 
+    get_provider,
     parse_torch_input,
-    parse_tf_input, 
-    setup_logging
+    parse_transformer_tf_input,
+    parse_transformer_torch_input,
+    setup_logging,
 )
+
+from fast_deploy.backend.common import create_model_for_provider, generic_optimize_onnx
 
 
 def main_transformers(args):
     """Command to parse transformers models"""
     from transformers import pipeline
+
     from fast_deploy.backend.transformers_ort import (
         transformers_convert_pytorch,
         transformers_convert_tf,
         transformers_optimize_onnx,
     )
-    
+
     Path(args.workdir).mkdir(parents=True, exist_ok=True)
     onnx_model_path = Path(f"{args.workdir}/transformer_{args.name}.onnx").as_posix()
     onnx_optim_model_path = Path(f"{args.workdir}/transformer_{args.name}.optim.onnx").as_posix()
@@ -47,7 +45,10 @@ def main_transformers(args):
     input_names = pipe_tokenizer.model_input_names
     include_token_ids = "token_type_ids" in input_names
 
+    output_np: np.ndarray = None
     if "pt" == args.framework:
+        import torch
+
         pipe_model.eval()
         inputs_pytorch, inputs_onnx = parse_transformer_torch_input(
             batch_size=1, seq_len=args.seq_len, include_token_ids=include_token_ids
@@ -56,7 +57,7 @@ def main_transformers(args):
         with torch.inference_mode():
             output = pipe_model(**inputs_pytorch)
             output = output.logits
-            output_np: np.ndarray = output.detach().cpu().numpy()
+            output_np = output.detach().cpu().numpy()
 
         transformers_convert_pytorch(
             model=pipe_model, output_path=onnx_model_path, inputs_pytorch=inputs_pytorch, verbose=args.verbose
@@ -68,7 +69,7 @@ def main_transformers(args):
 
         output = pipe_model(inputs_tf)
         output = output.logits
-        output_np: np.ndarray = output.numpy()
+        output_np = output.numpy()
 
         transformers_convert_tf(
             model=pipe_model, output_path=onnx_model_path, inputs_tf=inputs_tf, verbose=args.verbose
@@ -101,32 +102,16 @@ def main_transformers(args):
         onnx_model = create_model_for_provider(path=onnx_optim_model_path, provider_to_use=provider_to_use)
         output_onnx_optimised = onnx_model.run(None, inputs_onnx)
         assert np.allclose(a=output_onnx_optimised, b=output_np, atol=args.atol)
-        
-    input_ids = TritonIOConf(
-        name='input_ids',
-        data_type=TritonIOTypeConf.INT64,
-        dims=[-1, -1]
-    )
 
-    token_type_ids= TritonIOConf(
-        name='token_type_ids',
-        data_type=TritonIOTypeConf.INT64,
-        dims=[-1, -1]
-    )
+    input_ids = TritonIOConf(name='input_ids', data_type=TritonIOTypeConf.INT64, dims=[-1, -1])
 
-    attention_mask= TritonIOConf(
-        name='attention_mask',
-        data_type=TritonIOTypeConf.INT64,
-        dims=[-1, -1]
-    )
+    token_type_ids = TritonIOConf(name='token_type_ids', data_type=TritonIOTypeConf.INT64, dims=[-1, -1])
+
+    attention_mask = TritonIOConf(name='attention_mask', data_type=TritonIOTypeConf.INT64, dims=[-1, -1])
 
     output_shape = [-1 for _ in output_np.shape[:-1]]
     output_shape = output_shape + [output_np.shape[-1]]
-    output= TritonIOConf(
-        name='output',
-        data_type=TritonIOTypeConf.FP32,
-        dims=output_shape
-    )
+    output = TritonIOConf(name='output', data_type=TritonIOTypeConf.FP32, dims=output_shape)
 
     model_input = [input_ids, attention_mask]
     model_output = [output]
@@ -141,7 +126,7 @@ def main_transformers(args):
         nb_instance=1,
         use_cuda=args.cuda,
         model_inputs=model_input,
-        model_outputs=model_output
+        model_outputs=model_output,
     )
     model_conf.write(onnx_optim_model_path)
 
@@ -149,6 +134,7 @@ def main_transformers(args):
 def main_torch(args):
     """Command to parse torch models"""
     import torch
+
     from fast_deploy.backend.torch_ort import torch_convert_onnx
 
     torch_model = torch.load(args.model)
@@ -156,6 +142,7 @@ def main_torch(args):
         torch_model.cuda()
 
     torch_model.eval()
+    provider_to_use = get_provider(args)
 
     with open(args.file, "r") as stream:
         io_conf = yaml.safe_load(stream)
@@ -165,18 +152,16 @@ def main_torch(args):
     model_input = []
     for m_input in io_conf['inputs']:
         t_conf = TritonIOConf(
-            name=m_input['name'],
-            data_type=TritonIOTypeConf.from_str(m_input['dtype']),
-            dims=[-1] + m_input['shape']
+            name=m_input['name'], data_type=TritonIOTypeConf.from_str(m_input['dtype']), dims=[-1] + m_input['shape']
         )
         model_input.append(t_conf)
-    
+
     model_output = []
     for m_output in io_conf['outputs']:
         t_conf = TritonIOConf(
             name=m_output['name'],
             data_type=TritonIOTypeConf.from_str(m_output['dtype']),
-            dims=[-1] + m_output['shape']
+            dims=[-1] + m_output['shape'],
         )
         model_output.append(t_conf)
 
@@ -205,7 +190,7 @@ def main_torch(args):
         onnx_optim_model_path = onnx_model_path
     else:
         generic_optimize_onnx(onnx_path=onnx_model_path, output_path=onnx_optim_model_path)
-    
+
     model_conf = TritonModelConf(
         workind_directory=args.output,
         model_name=args.name,
@@ -213,17 +198,14 @@ def main_torch(args):
         nb_instance=1,
         use_cuda=args.cuda,
         model_inputs=model_input,
-        model_outputs=model_output
+        model_outputs=model_output,
     )
     model_conf.write(onnx_optim_model_path)
 
 
 def main_skl(args):
     """Command to parse sklearn models."""
-    from fast_deploy.backend.skl_ort import (
-        parse_skl_input,
-        skl_convert_onnx
-    )
+    from fast_deploy.backend.skl_ort import parse_skl_input, skl_convert_onnx
 
     with open(args.model, "rb") as p_file:
         model = pickle.load(p_file)
@@ -237,33 +219,22 @@ def main_skl(args):
     initial_type = []
     for m_input in io_conf['inputs']:
         t_conf = TritonIOConf(
-            name=m_input['name'],
-            data_type=TritonIOTypeConf.from_str(m_input['dtype']),
-            dims=[-1] + m_input['shape']
+            name=m_input['name'], data_type=TritonIOTypeConf.from_str(m_input['dtype']), dims=[-1] + m_input['shape']
         )
         model_input.append(t_conf)
-        initial_type.append(
-            (
-                m_input['name'], 
-                parse_skl_input([None] + m_input['shape'], m_input['dtype'])
-            )
-        )
-    
+        initial_type.append((m_input['name'], parse_skl_input([None] + m_input['shape'], m_input['dtype'])))
+
     model_output = []
     for m_output in io_conf['outputs']:
         t_conf = TritonIOConf(
-            name=m_output['name'],
-            data_type=TritonIOTypeConf.from_str(m_output['dtype']),
-            dims=m_output['shape']
+            name=m_output['name'], data_type=TritonIOTypeConf.from_str(m_output['dtype']), dims=m_output['shape']
         )
         model_output.append(t_conf)
 
     Path(args.workdir).mkdir(parents=True, exist_ok=True)
     onnx_model_path = Path(f"{args.workdir}/skl_{args.name}.onnx").as_posix()
 
-    skl_convert_onnx(
-        model=model, output_path=onnx_model_path, inputs_type=initial_type, verbose=args.verbose
-    )
+    skl_convert_onnx(model=model, output_path=onnx_model_path, inputs_type=initial_type, verbose=args.verbose)
 
     model_conf = TritonModelConf(
         workind_directory=args.output,
@@ -272,17 +243,14 @@ def main_skl(args):
         nb_instance=1,
         use_cuda=False,
         model_inputs=model_input,
-        model_outputs=model_output
+        model_outputs=model_output,
     )
     model_conf.write(onnx_model_path)
 
 
 def main_xgb(args):
     """Command to parse xgboost models."""
-    from fast_deploy.backend.xgb_ort import (
-        parse_xgb_input,
-        xgb_convert_onnx
-    )
+    from fast_deploy.backend.xgb_ort import parse_xgb_input, xgb_convert_onnx
 
     with open(args.model, "rb") as p_file:
         model = pickle.load(p_file)
@@ -296,33 +264,22 @@ def main_xgb(args):
     initial_type = []
     for m_input in io_conf['inputs']:
         t_conf = TritonIOConf(
-            name=m_input['name'],
-            data_type=TritonIOTypeConf.from_str(m_input['dtype']),
-            dims=[-1] + m_input['shape']
+            name=m_input['name'], data_type=TritonIOTypeConf.from_str(m_input['dtype']), dims=[-1] + m_input['shape']
         )
         model_input.append(t_conf)
-        initial_type.append(
-            (
-                m_input['name'], 
-                parse_xgb_input([None] + m_input['shape'], m_input['dtype'])
-            )
-        )
-    
+        initial_type.append((m_input['name'], parse_xgb_input([None] + m_input['shape'], m_input['dtype'])))
+
     model_output = []
     for m_output in io_conf['outputs']:
         t_conf = TritonIOConf(
-            name=m_output['name'],
-            data_type=TritonIOTypeConf.from_str(m_output['dtype']),
-            dims=m_output['shape']
+            name=m_output['name'], data_type=TritonIOTypeConf.from_str(m_output['dtype']), dims=m_output['shape']
         )
         model_output.append(t_conf)
 
     Path(args.workdir).mkdir(parents=True, exist_ok=True)
     onnx_model_path = Path(f"{args.workdir}/xgb_{args.name}.onnx").as_posix()
 
-    xgb_convert_onnx(
-        model=model, output_path=onnx_model_path, inputs_type=initial_type, verbose=args.verbose
-    )
+    xgb_convert_onnx(model=model, output_path=onnx_model_path, inputs_type=initial_type, verbose=args.verbose)
 
     model_conf = TritonModelConf(
         workind_directory=args.output,
@@ -331,7 +288,7 @@ def main_xgb(args):
         nb_instance=1,
         use_cuda=False,
         model_inputs=model_input,
-        model_outputs=model_output
+        model_outputs=model_output,
     )
     model_conf.write(onnx_model_path)
 
@@ -412,7 +369,6 @@ def main():
     default_args(parser_xgb)
     parser_xgb.add_argument("-f", "--file", required=True, help="model IO configuration.")
     parser_xgb.set_defaults(func=main_xgb)
-    
 
     args = parser.parse_args()
     setup_logging(level=logging.INFO if args.verbose else logging.WARNING)

@@ -1,19 +1,23 @@
-from skl2onnx.common.data_types import (
-    FloatTensorType, 
-    Int64TensorType,
-    Int32TensorType,
-    BooleanTensorType,
-    StringTensorType,
-    DoubleTensorType
-)
-from skl2onnx import to_onnx
-
-from skl2onnx.common.data_types import FloatTensorType
-from skl2onnx import convert_sklearn, update_registered_converter
-from skl2onnx.common.shape_calculator import calculate_linear_classifier_output_shapes  # noqa
-from xgboost import XGBClassifier
 # import onnxmltools
-from onnxmltools.convert.xgboost.operator_converters.XGBoost import convert_xgboost  # noqa
+from onnxmltools.convert.xgboost.operator_converters.XGBoost import (  # noqa
+    convert_xgboost,
+)
+
+from skl2onnx import convert_sklearn, update_registered_converter
+
+from skl2onnx.common.data_types import (
+    BooleanTensorType,
+    DoubleTensorType,
+    FloatTensorType,
+    Int32TensorType,
+    Int64TensorType,
+    StringTensorType,
+)
+from skl2onnx.common.shape_calculator import (  # noqa
+    calculate_linear_classifier_output_shapes,
+)
+from xgboost import XGBClassifier
+
 # import onnxmltools.convert.common.data_types
 
 
@@ -29,7 +33,9 @@ def _str_to_type(content):
         return Int32TensorType
     if 'bool' == content:
         return BooleanTensorType
-    
+    if 'str' == content:
+        return StringTensorType
+
     raise ValueError
 
 
@@ -44,9 +50,9 @@ def xgb_convert_onnx(model, output_path, inputs_type, verbose=False):
     update_registered_converter(
         XGBClassifier,
         'XGBoostXGBClassifier',
-        calculate_linear_classifier_output_shapes, 
+        calculate_linear_classifier_output_shapes,
         convert_xgboost,
-        options={'nocl': [True, False], 'zipmap': [True, False, 'columns']}
+        options={'nocl': [True, False], 'zipmap': [True, False, 'columns']},
     )
     # update_registered_converter(
     # model, 'XGBoostXGBClassifier',
