@@ -1,4 +1,5 @@
 pyaml==21.10.1
+types-PyYAML==6.0.1
 onnxruntime==1.10.0
 onnxruntime-tools==1.7.0
 onnxmltools==1.10.0
