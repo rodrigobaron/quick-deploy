@@ -70,7 +70,7 @@ def get_provider(args: Namespace) -> str:
 
 
 def parse_transformer_torch_input(
-    seq_len: int, batch_size: int, include_token_ids: bool
+    seq_len: int, batch_size: int, include_token_ids: bool, use_cuda: bool = False
 ) -> Tuple[OrderedDictType[str, torch.Tensor], OrderedDictType[str, np.ndarray]]:
     """Get transformers model input as torch and onnx.
 
@@ -97,6 +97,9 @@ def parse_transformer_torch_input(
     inputs_onnx: OrderedDict[str, np.ndarray] = OrderedDict(
         {k: np.ascontiguousarray(v.detach().cpu().numpy()) for k, v in inputs_pytorch.items()}
     )
+
+    inputs_pytorch, inputs_onnx = inputs_pytorch.cuda(), inputs_onnx.cuda()
+
     return inputs_pytorch, inputs_onnx
 
 

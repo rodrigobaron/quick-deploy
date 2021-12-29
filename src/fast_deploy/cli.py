@@ -1,3 +1,4 @@
+from os.path import expanduser
 import argparse
 import logging
 import pickle
@@ -6,7 +7,11 @@ from pathlib import Path
 import numpy as np
 import yaml
 
-from fast_deploy.triton_template import TritonIOConf, TritonIOTypeConf, TritonModelConf
+from fast_deploy.triton_template import (
+    TritonIOConf,
+    TritonIOTypeConf,
+    TritonModelConf
+)
 
 from fast_deploy.utils import (
     get_provider,
@@ -16,7 +21,10 @@ from fast_deploy.utils import (
     setup_logging,
 )
 
-from fast_deploy.backend.common import create_model_for_provider, generic_optimize_onnx
+from fast_deploy.backend.common import (
+    create_model_for_provider,
+    generic_optimize_onnx
+)
 
 
 def main_transformers(args):
@@ -29,7 +37,6 @@ def main_transformers(args):
         transformers_optimize_onnx,
     )
 
-    Path(args.workdir).mkdir(parents=True, exist_ok=True)
     onnx_model_path = Path(f"{args.workdir}/transformer_{args.name}.onnx").as_posix()
     onnx_optim_model_path = Path(f"{args.workdir}/transformer_{args.name}.optim.onnx").as_posix()
 
@@ -51,7 +58,7 @@ def main_transformers(args):
 
         pipe_model.eval()
         inputs_pytorch, inputs_onnx = parse_transformer_torch_input(
-            batch_size=1, seq_len=args.seq_len, include_token_ids=include_token_ids
+            batch_size=1, seq_len=args.seq_len, include_token_ids=include_token_ids, use_cuda=args.cuda
         )
 
         with torch.inference_mode():
@@ -172,7 +179,6 @@ def main_torch(args):
         output = torch_model(inputs_pytorch['input'])
         output_np: np.ndarray = output.detach().cpu().numpy()
 
-    Path(args.workdir).mkdir(parents=True, exist_ok=True)
     onnx_model_path = Path(f"{args.workdir}/torch_{args.name}.onnx").as_posix()
     onnx_optim_model_path = Path(f"{args.workdir}/torch_{args.name}.optim.onnx").as_posix()
 
@@ -231,7 +237,6 @@ def main_skl(args):
         )
         model_output.append(t_conf)
 
-    Path(args.workdir).mkdir(parents=True, exist_ok=True)
     onnx_model_path = Path(f"{args.workdir}/skl_{args.name}.onnx").as_posix()
 
     skl_convert_onnx(model=model, output_path=onnx_model_path, inputs_type=initial_type, verbose=args.verbose)
@@ -276,7 +281,6 @@ def main_xgb(args):
         )
         model_output.append(t_conf)
 
-    Path(args.workdir).mkdir(parents=True, exist_ok=True)
     onnx_model_path = Path(f"{args.workdir}/xgb_{args.name}.onnx").as_posix()
 
     xgb_convert_onnx(model=model, output_path=onnx_model_path, inputs_type=initial_type, verbose=args.verbose)
@@ -298,7 +302,7 @@ def default_args(parser):
     parser.add_argument("-n", "--name", required=True, help="model name")
     parser.add_argument("-m", "--model", required=True, help="model path")
     parser.add_argument("-o", "--output", required=True, help="path used to export models")
-    parser.add_argument("-w", "--workdir", default="env/", help="model path")
+    parser.add_argument("-w", "--workdir", default="~/.fast_deploy/", help="model path")
     parser.add_argument("--nb-instances", default=1, help="# of model instances", type=int)
     parser.add_argument("--cuda", action="store_true", help="use cuda optimization")
     parser.add_argument("-v", "--verbose", action="store_true", help="display detailed information")
@@ -373,7 +377,8 @@ def main():
     args = parser.parse_args()
     setup_logging(level=logging.INFO if args.verbose else logging.WARNING)
 
-    Path(args.output).mkdir(parents=True, exist_ok=True)
+    Path(expanduser(args.workdir)).mkdir(parents=True, exist_ok=True)
+    Path(expanduser(args.output)).mkdir(parents=True, exist_ok=True)
     args.func(args)
 
 
