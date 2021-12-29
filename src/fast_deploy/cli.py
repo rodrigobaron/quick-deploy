@@ -7,11 +7,7 @@ from pathlib import Path
 import numpy as np
 import yaml
 
-from fast_deploy.triton_template import (
-    TritonIOConf,
-    TritonIOTypeConf,
-    TritonModelConf
-)
+from fast_deploy.triton_template import TritonIOConf, TritonIOTypeConf, TritonModelConf
 
 from fast_deploy.utils import (
     get_provider,
@@ -21,10 +17,7 @@ from fast_deploy.utils import (
     setup_logging,
 )
 
-from fast_deploy.backend.common import (
-    create_model_for_provider,
-    generic_optimize_onnx
-)
+from fast_deploy.backend.common import create_model_for_provider, generic_optimize_onnx
 
 
 def main_transformers(args):
@@ -37,8 +30,8 @@ def main_transformers(args):
         transformers_optimize_onnx,
     )
 
-    onnx_model_path = Path(f"{args.workdir}/transformer_{args.name}.onnx").as_posix()
-    onnx_optim_model_path = Path(f"{args.workdir}/transformer_{args.name}.optim.onnx").as_posix()
+    onnx_model_path = Path(f"{expanduser(args.workdir)}/transformer_{args.name}.onnx").as_posix()
+    onnx_optim_model_path = Path(f"{expanduser(args.workdir)}/transformer_{args.name}.optim.onnx").as_posix()
 
     provider_to_use = get_provider(args)
 

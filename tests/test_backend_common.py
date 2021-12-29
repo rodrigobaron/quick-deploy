@@ -30,7 +30,7 @@ def test_create_model_for_provider(m, i):
 
     m.cpu_count.assert_called()
 
-    _ = create_model_for_provider(path="tmp/path2.optim.onnx", provider_to_use="GPUExecutionProvider")
+    _ = create_model_for_provider(path="tmp/path2.optim.onnx", provider_to_use="CUDAExecutionProvider")
 
     name, args, kwargs = i.mock_calls[0]
     assert "tmp/path.optim.onnx" == args[0]
@@ -38,4 +38,4 @@ def test_create_model_for_provider(m, i):
 
     name, args, kwargs = i.mock_calls[1]
     assert "tmp/path2.optim.onnx" == args[0]
-    assert ["GPUExecutionProvider"] == kwargs["providers"]
+    assert ["CUDAExecutionProvider"] == kwargs["providers"]

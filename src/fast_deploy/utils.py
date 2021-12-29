@@ -82,6 +82,8 @@ def parse_transformer_torch_input(
         Transformer model sequence length.
     include_token_ids: bool
         Check if need return the token ids also.
+    use_cuda: bool
+        Place the tensors on cuda device
 
     Returns
     ----------
@@ -99,14 +101,13 @@ def parse_transformer_torch_input(
     )
 
     if use_cuda:
-        inputs_pytorch = OrderedDict({k, v.cuda() fo k, v in inputs_pytorch.items()})
-        inputs_onnx = OrderedDict({k, v.cuda() fo k, v in inputs_onnx.items()})
+        inputs_pytorch = OrderedDict({k: v.cuda() for k, v in inputs_pytorch.items()})
 
     return inputs_pytorch, inputs_onnx
 
 
 def parse_torch_input(
-    shape: Tuple[int, ...], batch_size: int
+    shape: Tuple[int, ...], batch_size: int, use_cuda: bool = False
 ) -> Tuple[OrderedDictType[str, torch.Tensor], OrderedDictType[str, np.ndarray]]:
     """Get model input as torch and onnx.
 
@@ -118,6 +119,8 @@ def parse_torch_input(
         Transformer model sequence length.
     include_token_ids: bool
         Check if need return the token ids also.
+    use_cuda: bool
+        Place the tensors on cuda device
 
     Returns
     ----------
@@ -130,6 +133,10 @@ def parse_torch_input(
     inputs_onnx: OrderedDict[str, np.ndarray] = OrderedDict(
         {k: np.ascontiguousarray(v.detach().cpu().numpy()) for k, v in inputs_pytorch.items()}
     )
+
+    if use_cuda:
+        inputs_pytorch = OrderedDict({k: v.cuda() for k, v in inputs_pytorch.items()})
+
     return inputs_pytorch, inputs_onnx
 
 
