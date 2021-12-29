@@ -98,7 +98,9 @@ def parse_transformer_torch_input(
         {k: np.ascontiguousarray(v.detach().cpu().numpy()) for k, v in inputs_pytorch.items()}
     )
 
-    inputs_pytorch, inputs_onnx = inputs_pytorch.cuda(), inputs_onnx.cuda()
+    if use_cuda:
+        inputs_pytorch = OrderedDict({k, v.cuda() fo k, v in inputs_pytorch.items()})
+        inputs_onnx = OrderedDict({k, v.cuda() fo k, v in inputs_onnx.items()})
 
     return inputs_pytorch, inputs_onnx
 
