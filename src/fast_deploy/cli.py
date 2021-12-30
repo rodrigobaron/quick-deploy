@@ -166,14 +166,14 @@ def main_torch(args):
         model_output.append(t_conf)
 
     input_shape = tuple(model_input[-1].dims[1:])
-    inputs_pytorch, inputs_onnx = parse_torch_input(shape=input_shape, batch_size=1)
+    inputs_pytorch, inputs_onnx = parse_torch_input(shape=input_shape, batch_size=1, use_cuda=args.cuda)
 
     with torch.inference_mode():
         output = torch_model(inputs_pytorch['input'])
         output_np: np.ndarray = output.detach().cpu().numpy()
 
-    onnx_model_path = Path(f"{args.workdir}/torch_{args.name}.onnx").as_posix()
-    onnx_optim_model_path = Path(f"{args.workdir}/torch_{args.name}.optim.onnx").as_posix()
+    onnx_model_path = Path(f"{expanduser(args.workdir)}/torch_{args.name}.onnx").as_posix()
+    onnx_optim_model_path = Path(f"{expanduser(args.workdir)}/torch_{args.name}.optim.onnx").as_posix()
 
     torch_convert_onnx(
         model=torch_model, output_path=onnx_model_path, inputs_pytorch=inputs_pytorch, verbose=args.verbose
@@ -230,7 +230,7 @@ def main_skl(args):
         )
         model_output.append(t_conf)
 
-    onnx_model_path = Path(f"{args.workdir}/skl_{args.name}.onnx").as_posix()
+    onnx_model_path = Path(f"{expanduser(args.workdir)}/skl_{args.name}.onnx").as_posix()
 
     skl_convert_onnx(model=model, output_path=onnx_model_path, inputs_type=initial_type, verbose=args.verbose)
 
@@ -257,6 +257,7 @@ def main_xgb(args):
         io_conf = yaml.safe_load(stream)
 
     assert "IOSchema" == io_conf['kind']
+    onnx_model_path = Path(f"{expanduser(args.workdir)}/xgb_{args.name}.onnx").as_posix()
 
     model_input = []
     initial_type = []
@@ -273,8 +274,6 @@ def main_xgb(args):
             name=m_output['name'], data_type=TritonIOTypeConf.from_str(m_output['dtype']), dims=m_output['shape']
         )
         model_output.append(t_conf)
-
-    onnx_model_path = Path(f"{args.workdir}/xgb_{args.name}.onnx").as_posix()
 
     xgb_convert_onnx(model=model, output_path=onnx_model_path, inputs_type=initial_type, verbose=args.verbose)
 
