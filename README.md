@@ -2,7 +2,7 @@
 
 <h3 align="center">
     Optimize and deploy machine learning models fast and easy as possible.
-<h3>
+</h3>
 
 Fast-Deploy provide tools to optimize, convert and deploy machine learning models as [Triton Inference Server](https://github.com/triton-inference-server/server) using [Onnx Runtime](https://github.com/microsoft/onnxruntime) backend. It support 🤗 transformers, PyToch, Tensorflow, SKLearn and XGBoost models.
 
@@ -95,7 +95,7 @@ $ pip install fast-deploy
 
 ## Contributing
 
-Please follow the [Contributing](/blob/masterCONTRIBUTING.md) guide.
+Please follow the [Contributing](CONTRIBUTING.md) guide.
 
 ## License
 
