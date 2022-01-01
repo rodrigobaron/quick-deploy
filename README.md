@@ -78,7 +78,7 @@ token_logits = response.as_numpy("output")
 print(token_logits)
 ```
 
-*Note:* This does only model deployment the tokenizer and post-processing should be done in the client side. The full tansformers deployment is comming soon.
+**Note:** This does only model deployment the tokenizer and post-processing should be done in the client side. The full tansformers deployment is comming soon.
 
 For more use cases please check the [examples](examples) page.
 
@@ -94,6 +94,8 @@ or install the python library `fast-deploy`:
 ```bash
 $ pip install fast-deploy[all]
 ```
+
+**Note:** This will install the full vesion `all`.
 
 ## Contributing
 
