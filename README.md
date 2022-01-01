@@ -82,7 +82,7 @@ print(token_logits)
 
 ## Install
 
-There two options to user Fast-Deploy, using in the docker container:
+There two options to use Fast-Deploy, by docker container:
 ```bash
 $ docker run --rm -it fast-deploy:0.1.0 --help
 ```
