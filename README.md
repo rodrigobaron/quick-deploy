@@ -80,17 +80,19 @@ print(token_logits)
 
 *Note:* This does only model deployment the tokenizer and post-processing should be done in the client side. The full tansformers deployment is comming soon.
 
+For more use cases please check the [examples](examples) page.
+
 ## Install
 
-There two options to use Fast-Deploy, by docker container:
+Before install make sure to install just the target model eg.: "torch", "sklearn" or "all". There two options to use Fast-Deploy, by docker container:
 ```bash
-$ docker run --rm -it fast-deploy:0.1.0 --help
+$ docker run --rm -it fast-deploy:0.1.0-all --help
 ```
 
 or install the python library `fast-deploy`:
 
 ```bash
-$ pip install fast-deploy
+$ pip install fast-deploy[all]
 ```
 
 ## Contributing
