@@ -113,7 +113,6 @@ setup(
     install_requires=install_requires,
     classifiers=[
         "Intended Audience :: Developers",
-        "Intended Audience :: Engineers",
         "Intended Audience :: Science/Research",
         "License :: OSI Approved :: Apache Software License",
         "Operating System :: OS Independent",
