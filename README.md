@@ -86,7 +86,7 @@ For more use cases please check the [examples](examples) page.
 
 Before install make sure to install just the target model eg.: "torch", "sklearn" or "all". There two options to use Fast-Deploy, by docker container:
 ```bash
-$ docker run --rm -it fast-deploy:0.1.0-all --help
+$ docker run --rm -it rodrigobaron/fast-deploy:0.1.0-all --help
 ```
 
 or install the python library `fast-deploy`:
