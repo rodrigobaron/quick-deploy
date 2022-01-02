@@ -6,11 +6,7 @@ import numpy as np
 from datasets import load_dataset, load_metric
 from scipy.special import softmax
 from transformers import pipeline
-from utils import (
-    LMPerformanceBenchmark,
-    OnnxPipeline,
-    OnnxPerformanceBenchmark
-)
+from utils import LMPerformanceBenchmark, OnnxPerformanceBenchmark, OnnxPipeline
 
 pipe = pipeline("text-classification", "bert-base-uncased")
 dataset = [{"text": "The goal of life is [MASK]."}]

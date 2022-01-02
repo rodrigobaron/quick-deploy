@@ -1,10 +1,8 @@
 import numpy as np
 import tritonclient.http
-
 from sklearn.datasets import load_iris
-from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
-
+from sklearn.model_selection import train_test_split
 
 iris = load_iris()
 X, y = iris.data, iris.target
