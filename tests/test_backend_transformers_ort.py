@@ -1,14 +1,14 @@
 import mock
 
-from fast_deploy.backend.transformers_ort import (
+from quick_deploy.backend.transformers_ort import (
     transformers_convert_pytorch,
     transformers_convert_tf,
     transformers_optimize_onnx,
 )
-from fast_deploy.utils import parse_transformer_tf_input, parse_transformer_torch_input
+from quick_deploy.utils import parse_transformer_tf_input, parse_transformer_torch_input
 
 
-@mock.patch("fast_deploy.backend.transformers_ort.torch.onnx.export")
+@mock.patch("quick_deploy.backend.transformers_ort.torch.onnx.export")
 def test_transformers_convert_pytorch(e):
     pipe_model = mock.Mock()
 
@@ -38,7 +38,7 @@ def test_transformers_convert_pytorch(e):
     assert dynamic_axes == kwargs["dynamic_axes"]
 
 
-@mock.patch("fast_deploy.backend.transformers_ort.tf2onnx.convert.from_keras")
+@mock.patch("quick_deploy.backend.transformers_ort.tf2onnx.convert.from_keras")
 def test_transformers_convert_tf(e):
     pipe_model = mock.Mock()
 
@@ -59,7 +59,7 @@ def test_transformers_convert_tf(e):
         assert k in input_names
 
 
-@mock.patch("fast_deploy.backend.transformers_ort.optimizer.optimize_model")
+@mock.patch("quick_deploy.backend.transformers_ort.optimizer.optimize_model")
 def test_transformers_optimize_onnx(o):
 
     transformers_optimize_onnx(

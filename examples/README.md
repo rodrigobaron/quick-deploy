@@ -1,4 +1,4 @@
-## Exemples how to use FastDeploy in different libraries
+## Exemples how to use quick-deploy in different libraries
 
 This is under development, we will keep adding more examples and expanding the tool to cover most common uses cases and provide flexibility to extend to more uncommon ones.
 

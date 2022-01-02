@@ -1,18 +1,18 @@
-# Fast Deploy
+# Quick-Deploy
 
 <h3 align="center">
     Optimize and deploy machine learning models fast and easy as possible.
 </h3>
 
-Fast-Deploy provide tools to optimize, convert and deploy machine learning models as fast inference API (low latency and high throughput) by [Triton Inference Server](https://github.com/triton-inference-server/server) using [Onnx Runtime](https://github.com/microsoft/onnxruntime) backend. It support 🤗 transformers, PyToch, Tensorflow, SKLearn and XGBoost models.
+quick-deploy provide tools to optimize, convert and deploy machine learning models as fast inference API (low latency and high throughput) by [Triton Inference Server](https://github.com/triton-inference-server/server) using [Onnx Runtime](https://github.com/microsoft/onnxruntime) backend. It support 🤗 transformers, PyToch, Tensorflow, SKLearn and XGBoost models.
 
 
 ## Get Started
 
-Let's see an quick example by deploying bert transformers for GPU inference. Fast-deploy already have support 🤗 transformers so we can specify the path of pretrained model or just the name from the Hub:
+Let's see an quick example by deploying bert transformers for GPU inference. quick-deploy already have support 🤗 transformers so we can specify the path of pretrained model or just the name from the Hub:
 
 ```bash
-$ fast-deploy transformers \
+$ quick-deploy transformers \
     -n my-bert-base \
     -p text-classification \
     -m bert-base-uncased \
@@ -84,15 +84,15 @@ For more use cases please check the [examples](examples) page.
 
 ## Install
 
-Before install make sure to install just the target model eg.: "torch", "sklearn" or "all". There two options to use Fast-Deploy, by docker container:
+Before install make sure to install just the target model eg.: "torch", "sklearn" or "all". There two options to use quick-deploy, by docker container:
 ```bash
-$ docker run --rm -it rodrigobaron/fast-deploy:0.1.0-all --help
+$ docker run --rm -it rodrigobaron/quick-deploy:0.1.0-all --help
 ```
 
-or install the python library `fast-deploy`:
+or install the python library `quick-deploy`:
 
 ```bash
-$ pip install fast-deploy[all]
+$ pip install quick-deploy[all]
 ```
 
 **Note:** This will install the full vesion `all`.

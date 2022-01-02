@@ -2,4 +2,4 @@
 
 tritonserver --model-repository=/models &
 
-fast-deploy $@
+quick-deploy $@

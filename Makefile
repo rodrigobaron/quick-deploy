@@ -15,7 +15,7 @@ isort:
 	isort $(SRC_FOLDER) $(TEST_FOLDER) $(EXAMPLES_FOLDER)
 
 typecheck:
-	mypy --namespace-packages --explicit-package-bases -p fast_deploy
+	mypy --namespace-packages --explicit-package-bases -p quick_deploy
 	mypy --namespace-packages tests
 
 test:

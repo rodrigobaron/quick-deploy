@@ -7,8 +7,8 @@ from datasets import load_dataset, load_metric
 from scipy.special import softmax
 from transformers import pipeline
 
-from fast_deploy.backend.common import create_model_for_provider
-from fast_deploy.benchmark import PerformanceBenchmark
+from quick_deploy.backend.common import create_model_for_provider
+from quick_deploy.benchmark import PerformanceBenchmark
 
 
 class LMPerformanceBenchmark(PerformanceBenchmark):

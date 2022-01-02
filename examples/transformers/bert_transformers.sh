@@ -1,6 +1,6 @@
 #!/bin/bash
 
-fast-deploy transformers \
+quick-deploy transformers \
     -n my-bert-base \
     -p fill-mask \
     -m bert-base-uncased \

@@ -2,10 +2,10 @@ import mock
 import pytest
 from onnxruntime.quantization import QuantType
 
-from fast_deploy.backend.common import create_model_for_provider, generic_optimize_onnx
+from quick_deploy.backend.common import create_model_for_provider, generic_optimize_onnx
 
 
-@mock.patch("fast_deploy.backend.common.quantize_dynamic")
+@mock.patch("quick_deploy.backend.common.quantize_dynamic")
 def test_generic_optimize_onnx(m):
     generic_optimize_onnx(onnx_path="tmp/path.onnx", output_path="tmp/path.optim.onnx")
 
@@ -22,8 +22,8 @@ def test_generic_optimize_onnx(m):
     assert QuantType.QInt8 == kwargs["weight_type"]
 
 
-@mock.patch("fast_deploy.backend.common.InferenceSession")
-@mock.patch("fast_deploy.backend.common.multiprocessing")
+@mock.patch("quick_deploy.backend.common.InferenceSession")
+@mock.patch("quick_deploy.backend.common.multiprocessing")
 def test_create_model_for_provider(m, i):
 
     _ = create_model_for_provider(path="tmp/path.optim.onnx", provider_to_use="CPUExecutionProvider")

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-fast-deploy transformers \
+quick-deploy transformers \
     -n my-bart-base \
     -p summarization \
     -m "facebook/bart-base" \

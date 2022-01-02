@@ -28,9 +28,14 @@ The general format is:
 - C from D
 
 ```
+# 0.1.1 - DATE (02/01/2022)
 
-# 0.1.0 - DATE (XX/01/2022)
+### Changed
+
+- rename package
+
+# 0.1.0 - DATE (02/01/2022)
 
 ### Added
 
-- initial release of Fast-Deploy
+- initial release of quick-deploy

@@ -4,7 +4,7 @@ from enum import Enum
 from pathlib import Path
 from typing import List
 
-from fast_deploy.utils import slugify
+from quick_deploy.utils import slugify
 
 
 class TritonIOTypeConf(Enum):

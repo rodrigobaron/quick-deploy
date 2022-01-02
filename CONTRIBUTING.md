@@ -1,6 +1,6 @@
-## Contributing to Fast-Deploy
+## Contributing to quick-deploy
 
-**Thank you for considering contributing to Fast-deploy! You can contribute in so many ways like: code, answering questions, briging/implementing new use cases, examples and documentation.**
+**Thank you for considering contributing to quick-deploy! You can contribute in so many ways like: code, answering questions, briging/implementing new use cases, examples and documentation.**
 
 Please keep in mind the following guidelines and practices when contributing:
 
@@ -10,8 +10,8 @@ Please keep in mind the following guidelines and practices when contributing:
 1. Use `make verify` to lint, run tests, and typecheck on the project
 1. Add unit tests for any new code you write
 1. Add an example, or extend an existing example, with any new features you may add
-1. Increment the version in the [VERSION](https://github.com/rodrigobaron/fastdeploy/blob/main/VERSION) file. A
-   [CHANGELOG](https://github.com/rodrigobaron/fastdeploy/blob/main/CHANGELOG.md) entry is expected along with
+1. Increment the version in the [VERSION](https://github.com/rodrigobaron/quick-deploy/blob/main/VERSION) file. A
+   [CHANGELOG](https://github.com/rodrigobaron/quick-deploy/blob/main/CHANGELOG.md) entry is expected along with
    version increases!
 
 

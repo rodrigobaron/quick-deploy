@@ -7,9 +7,9 @@ from pathlib import Path
 import numpy as np
 import yaml
 
-from fast_deploy.triton_template import TritonIOConf, TritonIOTypeConf, TritonModelConf
+from quick_deploy.triton_template import TritonIOConf, TritonIOTypeConf, TritonModelConf
 
-from fast_deploy.utils import (
+from quick_deploy.utils import (
     get_provider,
     parse_torch_input,
     parse_transformer_tf_input,
@@ -17,14 +17,14 @@ from fast_deploy.utils import (
     setup_logging,
 )
 
-from fast_deploy.backend.common import create_model_for_provider, generic_optimize_onnx
+from quick_deploy.backend.common import create_model_for_provider, generic_optimize_onnx
 
 
 def main_transformers(args):
     """Command to parse transformers models"""
     from transformers import pipeline
 
-    from fast_deploy.backend.transformers_ort import (
+    from quick_deploy.backend.transformers_ort import (
         transformers_convert_pytorch,
         transformers_convert_tf,
         transformers_optimize_onnx,
@@ -135,7 +135,7 @@ def main_torch(args):
     """Command to parse torch models"""
     import torch
 
-    from fast_deploy.backend.torch_ort import torch_convert_onnx
+    from quick_deploy.backend.torch_ort import torch_convert_onnx
 
     torch_model = torch.load(args.model)
     if args.cuda:
@@ -204,7 +204,7 @@ def main_torch(args):
 
 def main_skl(args):
     """Command to parse sklearn models."""
-    from fast_deploy.backend.skl_ort import parse_skl_input, skl_convert_onnx
+    from quick_deploy.backend.skl_ort import parse_skl_input, skl_convert_onnx
 
     with open(args.model, "rb") as p_file:
         model = pickle.load(p_file)
@@ -248,7 +248,7 @@ def main_skl(args):
 
 def main_xgb(args):
     """Command to parse xgboost models."""
-    from fast_deploy.backend.xgb_ort import parse_xgb_input, xgb_convert_onnx
+    from quick_deploy.backend.xgb_ort import parse_xgb_input, xgb_convert_onnx
 
     with open(args.model, "rb") as p_file:
         model = pickle.load(p_file)
@@ -294,7 +294,7 @@ def default_args(parser):
     parser.add_argument("-n", "--name", required=True, help="model name")
     parser.add_argument("-m", "--model", required=True, help="model path")
     parser.add_argument("-o", "--output", required=True, help="path used to export models")
-    parser.add_argument("-w", "--workdir", default="~/.fast_deploy/", help="model path")
+    parser.add_argument("-w", "--workdir", default="~/.quick_deploy/", help="model path")
     parser.add_argument("--nb-instances", default=1, help="# of model instances", type=int)
     parser.add_argument("--cuda", action="store_true", help="use cuda optimization")
     parser.add_argument("-v", "--verbose", action="store_true", help="display detailed information")

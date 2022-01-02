@@ -1,6 +1,6 @@
 #!/bin/bash
 
-fast-deploy xgboost \
+quick-deploy xgboost \
     -n iris_xgbc \
     -m iris_xgbc.bin \
     -o ./models/iris_xgbc \

@@ -86,25 +86,25 @@ install_requires = [
 
 
 setup(
-    name='fast-deploy',
+    name='quick-deploy',
     version=VERSION,
-    description='FastDeploy optimize and deploy Machine Learning models as fast inference API.',
+    description='Quick-Deploy optimize and deploy Machine Learning models as fast inference API.',
     long_description=LONG_DESCRIPTION,
     long_description_content_type="text/markdown",
-    url="https://github.com/rodrigobaron/fastdeploy",
+    url="https://github.com/rodrigobaron/quick-deploy",
     author="Rodrigo Baron",
     author_email="baron.rodrigo0@gmail.com",
     license="Apache",
     package_dir={'': 'src'},
     packages=find_packages(where="src"),
     package_data={
-        'fast_deploy': ['py.typed'],
+        'quick_deploy': ['py.typed'],
     },
     zip_safe=False,
     extras_require=extras,
     entry_points={
         'console_scripts': [
-            'fast-deploy = fast_deploy.cli:main',
+            'quick-deploy = quick_deploy.cli:main',
         ],
     },
     data_files=[('', ['VERSION', 'README.md', 'LICENSE'])],

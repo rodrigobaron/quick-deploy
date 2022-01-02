@@ -1,7 +1,7 @@
 FROM nvcr.io/nvidia/tritonserver:21.11-py3
 
-ADD ./ /fastdeploy
-RUN pip install /fastdeploy
-RUN pip install -r /fastdeploy/requirements.txt
+ADD ./ /quick-deploy
+RUN pip install /quick-deploy
+RUN pip install -r /quick-deploy/requirements.txt
 
-ENTRYPOINT ["/fastdeploy/docker/wrapper.sh"]
+ENTRYPOINT ["/quick-deploy/docker/wrapper.sh"]

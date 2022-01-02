@@ -3,7 +3,7 @@ import logging
 import mock
 import pytest
 
-from fast_deploy.utils import (
+from quick_deploy.utils import (
     get_provider,
     parse_transformer_torch_input,
     setup_logging,

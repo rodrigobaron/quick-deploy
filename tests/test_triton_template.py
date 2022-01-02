@@ -1,7 +1,7 @@
 import mock
 import pytest
 
-from fast_deploy.triton_template import TritonIOConf, TritonIOTypeConf, TritonModelConf
+from quick_deploy.triton_template import TritonIOConf, TritonIOTypeConf, TritonModelConf
 
 
 @pytest.fixture
@@ -70,8 +70,8 @@ instance_group [
     assert inference_conf == conf.get_conf()
 
 
-@mock.patch("fast_deploy.triton_template.shutil.copy")
-@mock.patch("fast_deploy.triton_template.Path")
+@mock.patch("quick_deploy.triton_template.shutil.copy")
+@mock.patch("quick_deploy.triton_template.Path")
 def test_write_correct_paths(p, s, conf):
     pipe_tokenizer = mock.Mock()
     conf.write("tmp/path.optim.onnx")
