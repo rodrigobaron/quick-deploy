@@ -86,7 +86,7 @@ For more use cases please check the [examples](examples) page.
 
 Before install make sure to install just the target model eg.: "torch", "sklearn" or "all". There two options to use quick-deploy, by docker container:
 ```bash
-$ docker run --rm -it rodrigobaron/quick-deploy:0.1.0-all --help
+$ docker run --rm -it rodrigobaron/quick-deploy:0.1.1-all --help
 ```
 
 or install the python library `quick-deploy`:
