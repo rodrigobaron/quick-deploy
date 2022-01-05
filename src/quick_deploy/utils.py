@@ -194,6 +194,6 @@ def parse_tf_input(
     inputs_tf: OrderedDict[str, tf.Tensor] = OrderedDict()
     inputs_tf["input"] = tf.random.uniform(shape=new_shape, maxval=100, dtype=tf.float32)
     inputs_onnx: OrderedDict[str, np.ndarray] = OrderedDict(
-        {k: np.ascontiguousarray(v.detach().cpu().numpy()) for k, v in inputs_tf.items()}
+        {k: np.ascontiguousarray(v.cpu().numpy()) for k, v in inputs_tf.items()}
     )
     return inputs_tf, inputs_onnx

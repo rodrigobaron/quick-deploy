@@ -21,6 +21,9 @@ typecheck:
 test:
 	pytest --durations=5 $(TEST_FOLDER)
 
+cov:
+	pytest --cov=quick_deploy --durations=5 $(TEST_FOLDER)
+
 verify: lint typecheck test
 	echo "Lint, typecheck, test successfully completed!"
 
