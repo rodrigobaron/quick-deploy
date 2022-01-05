@@ -7,19 +7,19 @@ from skl2onnx.common.data_types import (
     Int64TensorType,
     StringTensorType,
 )
-from typing input Tuple, List, Any
+from typing import List, Any
 
 
 def _str_to_type(content: str) -> Any:
     """Get skl2onnx type by string.
-    
+
     This is used to parse model defintion to skl2onnx I/O
 
     Parameters
     ----------
     content: str
         The key representation of type.
-    
+
     Returns
     ----------
     Any:
@@ -42,18 +42,18 @@ def _str_to_type(content: str) -> Any:
     raise ValueError
 
 
-def parse_skl_input(shape: Tuple, dtype: str) -> Any:
+def parse_skl_input(shape: List[int], dtype: str) -> Any:
     """Parse input information to desired object.
-    
+
     This is used to create I/O tensor representation.
-    
+
     Parameters
     ----------
     shape: tuple
         The desired tensor shape.
     dtype: str
         The desired tensor type.
-    
+
     Returns
     ----------
     Any:
@@ -65,9 +65,9 @@ def parse_skl_input(shape: Tuple, dtype: str) -> Any:
 
 def skl_convert_onnx(model, output_path, inputs_type, verbose=False):
     """Convert a SkLearn model to ORT.
-    
+
     This is used to convert SkLearn model to ORT.
-    
+
     Parameters
     ----------
     model: SKLearn.Model

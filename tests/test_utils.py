@@ -11,7 +11,7 @@ from quick_deploy.utils import (
     slugify,
     parse_torch_input,
     parse_transformer_tf_input,
-    parse_tf_input
+    parse_tf_input,
 )
 
 
@@ -93,9 +93,7 @@ def test_parse_torch_input():
 
 def test_parse_transformer_tf_input():
 
-    inputs_tf, onnx_inputs = parse_transformer_tf_input(
-            batch_size=1, seq_len=16, include_token_ids=True
-    )
+    inputs_tf, onnx_inputs = parse_transformer_tf_input(batch_size=1, seq_len=16, include_token_ids=True)
 
     input_keys = list(inputs_tf.keys())
     for k in ["input_ids", "token_type_ids", "attention_mask"]:

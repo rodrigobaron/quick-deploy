@@ -16,19 +16,19 @@ from skl2onnx.common.shape_calculator import (  # noqa
     calculate_linear_classifier_output_shapes,
 )
 from xgboost import XGBClassifier
-from typing input Tuple, List, Any
+from typing import Tuple, List, Any
 
 
 def _str_to_type(content: str) -> Any:
     """Get skl2onnx type by string.
-    
+
     This is used to parse model defintion to skl2onnx I/O
 
     Parameters
     ----------
     content: str
         The key representation of type.
-    
+
     Returns
     ----------
     Any:
@@ -51,18 +51,18 @@ def _str_to_type(content: str) -> Any:
     raise ValueError
 
 
-def parse_xgb_input(shape: Tuple, dtype: str) -> Any:
+def parse_xgb_input(shape: List[int], dtype: str) -> Any:
     """Parse input information to desired object.
-    
+
     This is used to create I/O tensor representation.
-    
+
     Parameters
     ----------
     shape: tuple
         The desired tensor shape.
     dtype: str
         The desired tensor type.
-    
+
     Returns
     ----------
     Any:
@@ -72,14 +72,16 @@ def parse_xgb_input(shape: Tuple, dtype: str) -> Any:
     return type_cls(shape)
 
 
-def xgb_convert_onnx(model: XGBClassifier, output_path: str, inputs_type: List[Tuple[str, Any]], verbose: bool = False):
+def xgb_convert_onnx(
+    model: Any, output_path: str, inputs_type: List[Tuple[str, Any]], verbose: bool = False
+):
     """Convert a XGBoost model to ORT.
-    
+
     This is used to convert XGBoost model to ORT.
-    
+
     Parameters
     ----------
-    model: XGBClassifier
+    model: Any
         Model to be converted.
     output_path: str
         Path to save the ORT model.

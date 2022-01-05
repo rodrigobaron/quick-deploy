@@ -1,10 +1,7 @@
 import pytest
 import mock
 
-from quick_deploy.backend.xgb_ort import (
-    parse_xgb_input,
-    xgb_convert_onnx
-)
+from quick_deploy.backend.xgb_ort import parse_xgb_input, xgb_convert_onnx
 
 from skl2onnx.common.data_types import (
     BooleanTensorType,
@@ -44,6 +41,7 @@ def test_parse_xgb_input():
     with pytest.raises(ValueError):
         parse_xgb_input([None, 1], 'xxx')
 
+
 @mock.patch("quick_deploy.backend.xgb_ort.convert_sklearn")
 @mock.patch("quick_deploy.backend.xgb_ort.open")
 def test_xgb_convert_onnx(o, m):
@@ -55,7 +53,6 @@ def test_xgb_convert_onnx(o, m):
 
     assert args == ('test',)
     assert kwargs['initial_types'] == initial_type
-    
+
     options_k = list(kwargs['options'].keys())[0]
     assert kwargs['options'][options_k] == {'zipmap': False}
-
