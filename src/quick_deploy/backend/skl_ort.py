@@ -1,3 +1,5 @@
+from typing import Any, List
+
 from skl2onnx import to_onnx
 from skl2onnx.common.data_types import (
     BooleanTensorType,
@@ -7,7 +9,6 @@ from skl2onnx.common.data_types import (
     Int64TensorType,
     StringTensorType,
 )
-from typing import List, Any
 
 
 def _str_to_type(content: str) -> Any:

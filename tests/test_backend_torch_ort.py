@@ -1,8 +1,8 @@
+import mock
 import torch
 
 from quick_deploy.backend.torch_ort import torch_convert_onnx
 from quick_deploy.utils import parse_torch_input
-import mock
 
 
 @mock.patch("quick_deploy.backend.torch_ort.torch.onnx.export")

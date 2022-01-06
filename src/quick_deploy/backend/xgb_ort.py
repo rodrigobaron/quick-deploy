@@ -1,9 +1,9 @@
+from typing import Any, List, Tuple
+
 from onnxmltools.convert.xgboost.operator_converters.XGBoost import (  # noqa
     convert_xgboost,
 )
-
 from skl2onnx import convert_sklearn, update_registered_converter
-
 from skl2onnx.common.data_types import (
     BooleanTensorType,
     DoubleTensorType,
@@ -16,7 +16,6 @@ from skl2onnx.common.shape_calculator import (  # noqa
     calculate_linear_classifier_output_shapes,
 )
 from xgboost import XGBClassifier
-from typing import Tuple, List, Any
 
 
 def _str_to_type(content: str) -> Any:
@@ -72,9 +71,7 @@ def parse_xgb_input(shape: List[int], dtype: str) -> Any:
     return type_cls(shape)
 
 
-def xgb_convert_onnx(
-    model: Any, output_path: str, inputs_type: List[Tuple[str, Any]], verbose: bool = False
-):
+def xgb_convert_onnx(model: Any, output_path: str, inputs_type: List[Tuple[str, Any]], verbose: bool = False):
     """Convert a XGBoost model to ORT.
 
     This is used to convert XGBoost model to ORT.
