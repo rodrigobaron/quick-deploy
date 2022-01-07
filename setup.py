@@ -77,7 +77,7 @@ extras["dev"] = (
 
 extras["build"] = (
     deps_list(
-        "pyton-build",
+        "python-build",
         "coverage-badge"
     )
     + extras["dev"]
