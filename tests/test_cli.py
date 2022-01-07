@@ -8,6 +8,8 @@ from quick_deploy.cli import (
     main,
     main_torch,
     main_transformers,
+    main_skl,
+    main_xgb,
     skl_args,
     torch_args,
     transformers_args,
@@ -64,6 +66,39 @@ def torch_args_fixture():
         }
     )
 
+
+@pytest.fixture
+def skl_args_fixture():
+    return obj(
+        {
+            "atol": None,
+            "cuda": False,
+            "file": 'test.yaml',
+            "model": 'test.bin',
+            "name": 'test',
+            "nb_instances": 1,
+            "output": '/tmp/skl',
+            "verbose": False,
+            "workdir": '/tmp/quick_deploy/'
+        }
+    )
+
+
+@pytest.fixture
+def xgb_args_fixture():
+    return obj(
+        {
+            "atol": None,
+            "cuda": False,
+            "file": 'test.yaml',
+            "model": 'test.bin',
+            "name": 'test',
+            "nb_instances": 1,
+            "output": '/tmp/xgb',
+            "verbose": False,
+            "workdir": '/tmp/quick_deploy/'
+        }
+    )
 
 def parser_argument_asserts(parser, args_calls, kwargs_calls):
     total_calls = len(parser.add_argument.mock_calls)
@@ -146,6 +181,56 @@ def test_main_torch(y, o, t, g, p, e, torch_args_fixture):
 
     torch_ort_mock.torch_convert_onnx.assert_called()
     g.assert_called()
+    t.assert_called()
+
+
+skl_ort_mock = mock.Mock()
+
+@mock.patch("quick_deploy.cli.TritonModelConf")
+@mock.patch("quick_deploy.cli.open")
+@mock.patch("quick_deploy.cli.yaml.safe_load")
+@mock.patch("quick_deploy.cli.pickle.load")
+@mock.patch.dict("sys.modules", {'quick_deploy.backend.skl_ort': skl_ort_mock})
+def test_main_skl(p, y, o, t, skl_args_fixture):
+    y.return_value = {
+        'kind': 'IOSchema',
+        'inputs': [{'name': 'input', 'dtype': 'float32', 'shape': [1, 1, 1]}],
+        'outputs': [{'name': 'output', 'dtype': 'float32', 'shape': [1]}],
+    }
+
+    o.return_value.__enter__ = mock.Mock()
+    o.return_value.__exit__ = mock.Mock()
+
+    # path backend
+    skl_ort_mock.skl_convert_onnx = mock.Mock()
+    main_skl(skl_args_fixture)
+
+    skl_ort_mock.skl_convert_onnx.assert_called()
+    t.assert_called()
+
+
+xgb_ort_mock = mock.Mock()
+
+@mock.patch("quick_deploy.cli.TritonModelConf")
+@mock.patch("quick_deploy.cli.open")
+@mock.patch("quick_deploy.cli.yaml.safe_load")
+@mock.patch("quick_deploy.cli.pickle.load")
+@mock.patch.dict("sys.modules", {'quick_deploy.backend.xgb_ort': xgb_ort_mock})
+def test_main_xgb(p, y, o, t, xgb_args_fixture):
+    y.return_value = {
+        'kind': 'IOSchema',
+        'inputs': [{'name': 'input', 'dtype': 'float32', 'shape': [1, 1, 1]}],
+        'outputs': [{'name': 'output', 'dtype': 'float32', 'shape': [1]}],
+    }
+
+    o.return_value.__enter__ = mock.Mock()
+    o.return_value.__exit__ = mock.Mock()
+
+    # path backend
+    xgb_ort_mock.xgb_convert_onnx = mock.Mock()
+    main_xgb(xgb_args_fixture)
+
+    xgb_ort_mock.xgb_convert_onnx.assert_called()
     t.assert_called()
 
 
