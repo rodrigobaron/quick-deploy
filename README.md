@@ -7,6 +7,9 @@
     <a href="https://github.com/rodrigobaron/quick-deploy/blob/main/LICENSE">
         <img alt="GitHub" src="https://img.shields.io/github/license/rodrigobaron/quick-deploy.svg?color=blue">
     </a>
+    <a href="https://github.com/rodrigobaron/quick-deploy/releases">
+        <img alt="GitHub release" src="https://img.shields.io/github/release/rodrigobaron/quick-deploy.svg">
+    </a>
 </p>
 
 <h3 align="center">
