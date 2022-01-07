@@ -27,7 +27,9 @@ _deps = [
     "black==21.12b0",
     "flake8==4.0.1",
     "mypy==0.930",
-    "isort==5.10.1"
+    "isort==5.10.1",
+    "coverage-badge==1.1.0",
+    "python-build==0.2.13"
 ]
 
 
@@ -71,6 +73,14 @@ extras["dev"] = (
         "isort"
     )
     + extras["all"] 
+)
+
+extras["build"] = (
+    deps_list(
+        "pyton-build",
+        "coverage-badge"
+    )
+    + extras["dev"]
 )
 
 install_requires = [
