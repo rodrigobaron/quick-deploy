@@ -14,7 +14,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          python -m pip install .[build]
+          python -m pip install .[dev]
 
       - name: Run lint
         run: |
@@ -27,12 +27,4 @@ jobs:
       - name: Run tests
         run: |
           make test
-      
-      - name: Take coverage
-        run: |
-          make cov
-      
-      - name: Build badge
-        run: |
-          coverage-badge -o coverage.svg
       
