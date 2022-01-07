@@ -1,8 +1,5 @@
-import pytest
 import mock
-
-from quick_deploy.backend.skl_ort import parse_skl_input, skl_convert_onnx
-
+import pytest
 from skl2onnx.common.data_types import (
     BooleanTensorType,
     DoubleTensorType,
@@ -11,6 +8,8 @@ from skl2onnx.common.data_types import (
     Int64TensorType,
     StringTensorType,
 )
+
+from quick_deploy.backend.skl_ort import parse_skl_input, skl_convert_onnx
 
 
 def test_parse_skl_input():

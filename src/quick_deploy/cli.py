@@ -1,14 +1,14 @@
-from os.path import expanduser
 import argparse
 import logging
 import pickle
+from os.path import expanduser
 from pathlib import Path
 
 import numpy as np
 import yaml
 
+from quick_deploy.backend.common import create_model_for_provider, generic_optimize_onnx
 from quick_deploy.triton_template import TritonIOConf, TritonIOTypeConf, TritonModelConf
-
 from quick_deploy.utils import (
     get_provider,
     parse_torch_input,
@@ -16,8 +16,6 @@ from quick_deploy.utils import (
     parse_transformer_torch_input,
     setup_logging,
 )
-
-from quick_deploy.backend.common import create_model_for_provider, generic_optimize_onnx
 
 
 def main_transformers(args):
@@ -335,6 +333,16 @@ def torch_args(parser_torch):
     parser_torch.set_defaults(func=main_torch)
 
 
+def skl_args(parser_skl):
+    parser_skl.add_argument("-f", "--file", required=True, help="model IO configuration.")
+    parser_skl.set_defaults(func=main_skl)
+
+
+def xgb_args(parser_xgb):
+    parser_xgb.add_argument("-f", "--file", required=True, help="model IO configuration.")
+    parser_xgb.set_defaults(func=main_xgb)
+
+
 def main():
     """Entry-point function."""
     parser = argparse.ArgumentParser(
@@ -357,14 +365,12 @@ def main():
     # sklearn arguments and func binding
     parser_skl = subparsers.add_parser("sklearn")
     default_args(parser_skl)
-    parser_skl.add_argument("-f", "--file", required=True, help="model IO configuration.")
-    parser_skl.set_defaults(func=main_skl)
+    skl_args(parser_skl)
 
     # xgboost arguments and func binding
     parser_xgb = subparsers.add_parser("xgboost")
     default_args(parser_xgb)
-    parser_xgb.add_argument("-f", "--file", required=True, help="model IO configuration.")
-    parser_xgb.set_defaults(func=main_xgb)
+    xgb_args(parser_xgb)
 
     args = parser.parse_args()
     setup_logging(level=logging.INFO if args.verbose else logging.WARNING)

@@ -1,17 +1,17 @@
 import logging
 
 import mock
+import numpy as np
 import pytest
 
-import numpy as np
 from quick_deploy.utils import (
     get_provider,
+    parse_tf_input,
+    parse_torch_input,
+    parse_transformer_tf_input,
     parse_transformer_torch_input,
     setup_logging,
     slugify,
-    parse_torch_input,
-    parse_transformer_tf_input,
-    parse_tf_input,
 )
 
 
