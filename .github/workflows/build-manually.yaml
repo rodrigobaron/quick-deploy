@@ -1,6 +1,6 @@
-name: Quick-Deploy `main` build and publish
+name: Quick-Deploy manually build and publish
 on:
-  workflow_dispacher
+  workflow_dispatch
 jobs:
   quick-deploy-main-build:
     timeout-minutes: 10
