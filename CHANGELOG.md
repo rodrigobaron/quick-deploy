@@ -28,6 +28,15 @@ The general format is:
 - C from D
 
 ```
+# 0.2.0 - DATE (08/01/2022)
+
+### Added
+- Code coverage
+- Tensorflow command
+
+### Changed
+- Code documentation
+
 # 0.1.1 - DATE (02/01/2022)
 
 ### Changed
