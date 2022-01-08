@@ -7,11 +7,13 @@ from quick_deploy.cli import (
     default_args,
     main,
     main_torch,
+    main_tf,
     main_transformers,
     main_skl,
     main_xgb,
     skl_args,
     torch_args,
+    tf_args,
     transformers_args,
     xgb_args,
 )
@@ -60,7 +62,25 @@ def torch_args_fixture():
             "name": 'test',
             "nb_instances": 1,
             "no_quant": False,
-            "output": '/tmp/resnet18',
+            "output": '/tmp/tf',
+            "verbose": False,
+            "workdir": '/tmp/quick_deploy/',
+        }
+    )
+
+
+@pytest.fixture
+def tf_args_fixture():
+    return obj(
+        {
+            "atol": None,
+            "cuda": False,
+            "file": 'test.yaml',
+            "model": 'test.pt',
+            "name": 'test',
+            "nb_instances": 1,
+            "no_quant": False,
+            "output": '/tmp/tf',
             "verbose": False,
             "workdir": '/tmp/quick_deploy/',
         }
@@ -79,7 +99,7 @@ def skl_args_fixture():
             "nb_instances": 1,
             "output": '/tmp/skl',
             "verbose": False,
-            "workdir": '/tmp/quick_deploy/'
+            "workdir": '/tmp/quick_deploy/',
         }
     )
 
@@ -96,9 +116,10 @@ def xgb_args_fixture():
             "nb_instances": 1,
             "output": '/tmp/xgb',
             "verbose": False,
-            "workdir": '/tmp/quick_deploy/'
+            "workdir": '/tmp/quick_deploy/',
         }
     )
+
 
 def parser_argument_asserts(parser, args_calls, kwargs_calls):
     total_calls = len(parser.add_argument.mock_calls)
@@ -184,7 +205,35 @@ def test_main_torch(y, o, t, g, p, e, torch_args_fixture):
     t.assert_called()
 
 
+tf_ort_mock = mock.Mock()
+tf_mock = mock.Mock()
+
+
+@mock.patch("quick_deploy.cli.expanduser")
+@mock.patch("quick_deploy.cli.Path")
+@mock.patch("quick_deploy.cli.generic_optimize_onnx")
+@mock.patch("quick_deploy.cli.TritonModelConf")
+@mock.patch("quick_deploy.cli.open")
+@mock.patch("quick_deploy.cli.yaml.safe_load")
+@mock.patch.dict("sys.modules", {'tensorflow': tf_mock, 'quick_deploy.backend.tf_ort': tf_ort_mock})
+def test_main_tf(y, o, t, g, p, e, tf_args_fixture):
+    y.return_value = {
+        'kind': 'IOSchema',
+        'inputs': [{'name': 'input', 'dtype': 'float32', 'shape': [1, 1, 1]}],
+        'outputs': [{'name': 'output', 'dtype': 'float32', 'shape': [1]}],
+    }
+
+    # path backend
+    tf_ort_mock.tf_convert_onnx = mock.Mock()
+    main_tf(tf_args_fixture)
+
+    tf_ort_mock.tf_convert_onnx.assert_called()
+    g.assert_called()
+    t.assert_called()
+
+
 skl_ort_mock = mock.Mock()
+
 
 @mock.patch("quick_deploy.cli.TritonModelConf")
 @mock.patch("quick_deploy.cli.open")
@@ -210,6 +259,7 @@ def test_main_skl(p, y, o, t, skl_args_fixture):
 
 
 xgb_ort_mock = mock.Mock()
+
 
 @mock.patch("quick_deploy.cli.TritonModelConf")
 @mock.patch("quick_deploy.cli.open")
@@ -294,6 +344,19 @@ def test_transformers_args():
 def test_torch_args():
     parser = mock.Mock()
     torch_args(parser)
+
+    args_calls = [('-f', '--file'), ('--no-quant',)]
+    kwargs_calls = [
+        {'required': True, 'help': 'model IO configuration.'},
+        {'action': 'store_true', 'help': 'avoid quant optimization'},
+    ]
+
+    parser_argument_asserts(parser, args_calls, kwargs_calls)
+
+
+def test_tf_args():
+    parser = mock.Mock()
+    tf_args(parser)
 
     args_calls = [('-f', '--file'), ('--no-quant',)]
     kwargs_calls = [

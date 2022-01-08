@@ -18,7 +18,7 @@ _deps = [
     "transformers==4.15.0",
     "scikit-learn==1.0.1",
     "skl2onnx==1.9.0",
-    "tensorflow==2.7.0",
+    "tensorflow>=2.3",
     "tf2onnx==1.9.3",
     "xgboost==1.5.1",
     "pytest==6.2.5",

@@ -172,7 +172,7 @@ def parse_transformer_tf_input(
 
 
 def parse_tf_input(
-    shape: Tuple[int], batch_size: int
+    shape: Tuple[int, ...], batch_size: int
 ) -> Tuple[OrderedDictType[str, tf.Tensor], OrderedDictType[str, np.ndarray]]:
     """Get model input as tensorflow and onnx.
 
