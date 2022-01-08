@@ -29,7 +29,8 @@ _deps = [
     "mypy==0.930",
     "isort==5.10.1",
     "coverage-badge==1.1.0",
-    "python-build==0.2.13"
+    "python-build==0.2.13",
+    "build==0.7.0"
 ]
 
 
@@ -78,7 +79,8 @@ extras["dev"] = (
 extras["build"] = (
     deps_list(
         "python-build",
-        "coverage-badge"
+        "coverage-badge",
+        "build"
     )
     + extras["dev"]
 )
