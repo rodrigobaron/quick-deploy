@@ -1,0 +1,9 @@
+kind: IOSchema
+inputs:
+  - name: dense_input
+    dtype: float32
+    shape: [784]
+outputs:
+  - name: dense_1
+    shape: [10]
+    dtype: float32

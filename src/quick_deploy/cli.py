@@ -12,6 +12,7 @@ from quick_deploy.triton_template import TritonIOConf, TritonIOTypeConf, TritonM
 from quick_deploy.utils import (
     get_provider,
     parse_torch_input,
+    parse_tf_input,
     parse_transformer_tf_input,
     parse_transformer_torch_input,
     setup_logging,
@@ -200,6 +201,78 @@ def main_torch(args):
     model_conf.write(onnx_optim_model_path)
 
 
+def main_tf(args):
+    """Command to parse torch models"""
+    import tensorflow as tf
+
+    from quick_deploy.backend.tf_ort import tf_convert_onnx
+
+    tf_model = tf.keras.models.load_model(args.model)
+    if args.cuda:
+        # torch_model.cuda()
+        pass
+
+    provider_to_use = get_provider(args)
+
+    with open(args.file, "r") as stream:
+        io_conf = yaml.safe_load(stream)
+
+    assert "IOSchema" == io_conf['kind']
+
+    model_input = []
+    for m_input in io_conf['inputs']:
+        t_conf = TritonIOConf(
+            name=m_input['name'], data_type=TritonIOTypeConf.from_str(m_input['dtype']), dims=[-1] + m_input['shape']
+        )
+        model_input.append(t_conf)
+
+    model_output = []
+    for m_output in io_conf['outputs']:
+        t_conf = TritonIOConf(
+            name=m_output['name'],
+            data_type=TritonIOTypeConf.from_str(m_output['dtype']),
+            dims=[-1] + m_output['shape'],
+        )
+        model_output.append(t_conf)
+
+    input_shape = tuple(model_input[-1].dims[1:])
+    inputs_tf, inputs_onnx = parse_tf_input(shape=input_shape, batch_size=1)
+
+    output = tf_model.predict(inputs_tf['input'])
+    output_np: np.ndarray = None
+    if args.cuda:
+        output_np = output.cpu().numpy()
+    else:
+        output_np = output
+
+    onnx_model_path = Path(f"{expanduser(args.workdir)}/tf_{args.name}.onnx").as_posix()
+    onnx_optim_model_path = Path(f"{expanduser(args.workdir)}/tf_{args.name}.optim.onnx").as_posix()
+
+    tf_convert_onnx(model=tf_model, output_path=onnx_model_path, verbose=args.verbose)
+    del tf_model
+
+    if args.atol is not None:
+        onnx_model = create_model_for_provider(path=onnx_model_path, provider_to_use=provider_to_use)
+        output_onnx = onnx_model.run(None, inputs_onnx)
+        assert np.allclose(a=output_onnx, b=output_np, atol=args.atol)
+
+    if args.no_quant:
+        onnx_optim_model_path = onnx_model_path
+    else:
+        generic_optimize_onnx(onnx_path=onnx_model_path, output_path=onnx_optim_model_path)
+
+    model_conf = TritonModelConf(
+        workind_directory=args.output,
+        model_name=args.name,
+        batch_size=0,
+        nb_instance=1,
+        use_cuda=args.cuda,
+        model_inputs=model_input,
+        model_outputs=model_output,
+    )
+    model_conf.write(onnx_optim_model_path)
+
+
 def main_skl(args):
     """Command to parse sklearn models."""
     from quick_deploy.backend.skl_ort import parse_skl_input, skl_convert_onnx
@@ -333,6 +406,13 @@ def torch_args(parser_torch):
     parser_torch.set_defaults(func=main_torch)
 
 
+def tf_args(parser_tf):
+    """Parse tensorflow arguments."""
+    parser_tf.add_argument("-f", "--file", required=True, help="model IO configuration.")
+    parser_tf.add_argument("--no-quant", action="store_true", help="avoid quant optimization")
+    parser_tf.set_defaults(func=main_tf)
+
+
 def skl_args(parser_skl):
     parser_skl.add_argument("-f", "--file", required=True, help="model IO configuration.")
     parser_skl.set_defaults(func=main_skl)
@@ -349,7 +429,7 @@ def main():
         description="Optimize and deploy machine learning models fast as possible!",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    subparsers = parser.add_subparsers(help="transformers help", dest="transformers, torch")
+    subparsers = parser.add_subparsers(dest="transformers, torch, tf, sklearn, xgboost")
     subparsers.required = True
 
     # transformers arguments and func binding
@@ -361,6 +441,11 @@ def main():
     parser_torch = subparsers.add_parser("torch")
     default_args(parser_torch)
     torch_args(parser_torch)
+
+    # tf arguments and func binding
+    parser_tf = subparsers.add_parser("tf")
+    default_args(parser_tf)
+    tf_args(parser_tf)
 
     # sklearn arguments and func binding
     parser_skl = subparsers.add_parser("sklearn")
