@@ -2,12 +2,9 @@ import logging
 import re
 from argparse import Namespace
 from collections import OrderedDict
-from typing import OrderedDict as OrderedDictType
 from typing import Tuple
 
 import numpy as np
-import tensorflow as tf
-import torch
 import unidecode
 
 
@@ -63,15 +60,12 @@ def get_provider(args: Namespace) -> str:
         'CUDAExecutionProvider' or  'CPUExecutionProvider'.
     """
     if args.cuda:
-        assert torch.cuda.is_available(), "CUDA is not available. Please check your CUDA installation"
         return "CUDAExecutionProvider"
 
     return "CPUExecutionProvider"
 
 
-def parse_transformer_torch_input(
-    seq_len: int, batch_size: int, include_token_ids: bool, use_cuda: bool = False
-) -> Tuple[OrderedDictType[str, torch.Tensor], OrderedDictType[str, np.ndarray]]:
+def parse_transformer_torch_input(seq_len: int, batch_size: int, include_token_ids: bool, use_cuda: bool = False):
     """Get transformers model input as torch and onnx.
 
     This is used to create torch and onnx model input configuration.
@@ -90,6 +84,8 @@ def parse_transformer_torch_input(
     Tuple[Tuple[Dict[str, Tensor]], Tuple[Dict[str, Tensor]]]
         A tuple of same shape for torch and onnx.
     """
+    import torch
+
     shape = (batch_size, seq_len)
     inputs_pytorch: OrderedDict[str, torch.Tensor] = OrderedDict()
     inputs_pytorch["input_ids"] = torch.randint(high=100, size=shape, dtype=torch.long)
@@ -106,9 +102,7 @@ def parse_transformer_torch_input(
     return inputs_pytorch, inputs_onnx
 
 
-def parse_torch_input(
-    shape: Tuple[int, ...], batch_size: int, use_cuda: bool = False
-) -> Tuple[OrderedDictType[str, torch.Tensor], OrderedDictType[str, np.ndarray]]:
+def parse_torch_input(shape: Tuple[int, ...], batch_size: int, use_cuda: bool = False):
     """Get model input as torch and onnx.
 
     This is used to create torch and onnx model input configuration.
@@ -127,6 +121,8 @@ def parse_torch_input(
     Tuple[Tuple[Dict[str, Tensor]], Tuple[Dict[str, Tensor]]]
         A tuple of same shape for torch and onnx.
     """
+    import torch
+
     shape = (batch_size,) + shape
     inputs_pytorch: OrderedDict[str, torch.Tensor] = OrderedDict()
     inputs_pytorch["input"] = torch.randint(high=100, size=shape, dtype=torch.long).type(torch.float)
@@ -140,9 +136,7 @@ def parse_torch_input(
     return inputs_pytorch, inputs_onnx
 
 
-def parse_transformer_tf_input(
-    seq_len: int, batch_size: int, include_token_ids: bool
-) -> Tuple[OrderedDictType[str, tf.Tensor], OrderedDictType[str, np.ndarray]]:
+def parse_transformer_tf_input(seq_len: int, batch_size: int, include_token_ids: bool):
     """Get transformers model input as tf and onnx.
 
     This is used to create tf and onnx model input configuration.
@@ -159,6 +153,8 @@ def parse_transformer_tf_input(
     Tuple[Tuple[Dict[str, Tensor]], Tuple[Dict[str, Tensor]]]
         A tuple of same shape for tf and onnx.
     """
+    import tensorflow as tf
+
     shape = (batch_size, seq_len)
     inputs_tf: OrderedDict[str, tf.Tensor] = OrderedDict()
     inputs_tf["input_ids"] = tf.random.uniform(shape=shape, maxval=100, dtype=tf.int64)
@@ -171,9 +167,7 @@ def parse_transformer_tf_input(
     return inputs_tf, inputs_onnx
 
 
-def parse_tf_input(
-    shape: Tuple[int, ...], batch_size: int
-) -> Tuple[OrderedDictType[str, tf.Tensor], OrderedDictType[str, np.ndarray]]:
+def parse_tf_input(shape: Tuple[int, ...], batch_size: int):
     """Get model input as tensorflow and onnx.
 
     This is used to create tensorflow and onnx model input configuration.
@@ -190,6 +184,8 @@ def parse_tf_input(
     Tuple[Tuple[Dict[str, Tensor]], Tuple[Dict[str, Tensor]]]
         A tuple of same shape for tensorflow and onnx.
     """
+    import tensorflow as tf
+
     new_shape: Tuple[int, ...] = (batch_size,) + shape
     inputs_tf: OrderedDict[str, tf.Tensor] = OrderedDict()
     inputs_tf["input"] = tf.random.uniform(shape=new_shape, maxval=100, dtype=tf.float32)

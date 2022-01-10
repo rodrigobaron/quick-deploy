@@ -28,6 +28,11 @@ The general format is:
 - C from D
 
 ```
+# 0.2.1 - DATE (08/01/2022)
+
+### Changed
+- Fix minimal version imports 
+
 # 0.2.0 - DATE (08/01/2022)
 
 ### Added
