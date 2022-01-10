@@ -56,7 +56,7 @@ outputs:
     dtype: float32
 ```
 
-# Deploy it
+## Deploy
 
 Now with the model trained `ris_cls.bin` and with the IO definition `iris_cls.yaml` we can use **Quick-Deploy**:
 
@@ -134,8 +134,7 @@ label_prob = probs[label_pred]
 print(f"Model predicted {label_pred}: with score of {label_prob}, the truth is {example_y}!")
 ```
 
-Display example:
+Example display:
 ```
 Model predicted 2: with score of 0.9399996399879456, the truth is 2!
 ```
-
