@@ -128,8 +128,10 @@ print(f"Image prediction: {cls_list[str(cls_pred)]}!")
 
 ```
 
-Example display:
+Example display:  
+
 ![Image](image.png)
+
 ```
 Image prediction: golden retriever!
 ```
