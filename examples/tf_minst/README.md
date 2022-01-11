@@ -79,15 +79,11 @@ outputs:
 Now with the model trained `mnist_model` and with the IO definition `mnist.yaml` we can use **Quick-Deploy**:
 
 ```bash
-#!/bin/bash
-
-
-quick-deploy tf \
+$ quick-deploy tf \
     --name mnist \
     --model mnist_model \
     --output ./models \
     --file mnist.yaml
-
 ```
 
 The arguments is prety straightforward. Now we run the `triton inference sever` ([run_inference_server.sh](run_inference_server.sh)), in this example using docker:
