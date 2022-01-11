@@ -45,14 +45,14 @@ Now with the model trained `resnet18.pt` and with the IO definition `resnet18.ya
 
 ```bash
 $ quick-deploy torch \
-    -n resnet18 \
-    -m resnet18.pt \
-    -o ./models \
-    -f resnet18.yaml \
+    --name resnet18 \
+    --model resnet18.pt \
+    --output ./models \
+    --file resnet18.yaml \
     --no-quant
 ```
 
-The arguments is prety straightforward. Now we run the `triton inference sever` ([run_inference_server.sh](run_inference_server.sh)), in this example using docker:
+By passing `--no-quant` we don't apply any optimization thats because Onnx doesn't have the implementation of `ConvInt`. Now we run the `triton inference sever` ([run_inference_server.sh](run_inference_server.sh)), in this example using docker:
 
 ## Spin Up the Server 
 
