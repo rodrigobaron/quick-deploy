@@ -3,13 +3,14 @@ import os
 import tensorflow as tf
 from tensorflow import keras
 
-print(tf.version.VERSION)
-
+# load dataset
 (train_images, train_labels), (test_images, test_labels) = tf.keras.datasets.mnist.load_data()
 
+# take a subset for fast demostration
 train_labels = train_labels[:1000]
 test_labels = test_labels[:1000]
 
+# reshape to fit a dense layer
 train_images = train_images[:1000].reshape(-1, 28 * 28) / 255.0
 test_images = test_images[:1000].reshape(-1, 28 * 28) / 255.0
 
@@ -32,13 +33,9 @@ def create_model():
     return model
 
 
-# Create a basic model instance
+# Train the model
 model = create_model()
-
-# Display the model's architecture
-model.summary()
-
 model.fit(train_images, train_labels, epochs=5)
 
-# Save the entire model as a SavedModel.
+# Save the entire model.
 model.save('mnist_model')
