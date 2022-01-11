@@ -6,7 +6,7 @@ In this example we'll cover the deployment of an `Resnet18` for the classical `I
 
 Instal the dependencies:
 ```bash
-$ pip install quick-deploy[torch] timm torchvision PIL tritonclient geventhttpclient 
+$ pip install quick-deploy[torch] timm torchvision Pillow tritonclient geventhttpclient 
 ```
 
 ## Model Training
