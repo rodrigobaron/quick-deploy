@@ -1,6 +1,6 @@
 # SKLearn Iris Classifier
 
-In this example we'll cover the deployment of an `RandomForestClassifier` for the classical `Iris` dataset to demonstrate the how is easy move machine learning model to a production ready soluction using **Quick-Deploy**.
+In this example we'll cover the deployment of an `RandomForestClassifier` for the classical `Iris` dataset to demonstrate how easy is move machine learning model to a production ready soluction using **Quick-Deploy**.
 
 ## Install
 
@@ -67,7 +67,8 @@ $ quick-deploy sklearn \
     --output ./models \
     --file iris_cls.yaml
 ```
-The arguments is prety straightforward now we run the `triton inference sever` ([run_inference_server.sh](run_inference_server.sh)), in this example using docker:
+
+The arguments is prety straightforward. Now we run the `triton inference sever` ([run_inference_server.sh](run_inference_server.sh)), in this example using docker:
 
 ## Spin Up the Server 
 
