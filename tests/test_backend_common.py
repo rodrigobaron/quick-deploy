@@ -7,9 +7,9 @@ from quick_deploy.backend.common import create_model_for_provider, generic_optim
 
 @mock.patch("quick_deploy.backend.common.quantize_dynamic")
 def test_generic_optimize_onnx(m):
-    generic_optimize_onnx(onnx_path="tmp/path.onnx", output_path="tmp/path.optim.onnx")
+    generic_optimize_onnx(onnx_path="tmp/path.onnx", output_path="tmp/path.optim.onnx", quant_type='int8')
 
-    generic_optimize_onnx(onnx_path="tmp/path2.onnx", output_path="tmp/path2.optim.onnx")
+    generic_optimize_onnx(onnx_path="tmp/path2.onnx", output_path="tmp/path2.optim.onnx", quant_type='uint8')
 
     name, args, kwargs = m.mock_calls[0]
     assert "tmp/path.onnx" == kwargs['model_input']
@@ -19,7 +19,7 @@ def test_generic_optimize_onnx(m):
     name, args, kwargs = m.mock_calls[1]
     assert "tmp/path2.onnx" == kwargs['model_input']
     assert "tmp/path2.optim.onnx" == kwargs['model_output']
-    assert QuantType.QInt8 == kwargs["weight_type"]
+    assert QuantType.QUInt8 == kwargs["weight_type"]
 
 
 @mock.patch("quick_deploy.backend.common.InferenceSession")

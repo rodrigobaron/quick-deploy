@@ -1,5 +1,5 @@
-import timm;
-import torch;
+import timm
+import torch
 
 # load pretrained model and save
 model = timm.create_model('resnet18', pretrained=True)

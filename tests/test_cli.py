@@ -47,6 +47,7 @@ def transformers_args_fixture():
             'tokenizer': None,
             'verbose': False,
             'workdir': '/tmp/quick_deploy/',
+            'quant_type': 'int8',
         }
     )
 
@@ -65,6 +66,7 @@ def torch_args_fixture():
             "output": '/tmp/tf',
             "verbose": False,
             "workdir": '/tmp/quick_deploy/',
+            'quant_type': 'int8',
         }
     )
 
@@ -83,6 +85,7 @@ def tf_args_fixture():
             "output": '/tmp/tf',
             "verbose": False,
             "workdir": '/tmp/quick_deploy/',
+            'quant_type': 'int8',
         }
     )
 
@@ -297,6 +300,8 @@ def test_default_args():
         ('--cuda',),
         ('-v', '--verbose'),
         ('--atol',),
+        ('--custom-module',),
+        ('--quant-type',),
     ]
     kwargs_calls = [
         {'required': True, 'help': 'model name'},
@@ -307,6 +312,8 @@ def test_default_args():
         {'action': 'store_true', 'help': 'use cuda optimization'},
         {'action': 'store_true', 'help': 'display detailed information'},
         {'default': None, 'help': 'test outputs when convert', 'type': float},
+        {'default': None, 'help': 'use custom module path'},
+        {'choices': ['int8', 'uint8'], 'default': 'int8', 'help': 'set quantization weights type'},
     ]
 
     parser_argument_asserts(parser, args_calls, kwargs_calls)
