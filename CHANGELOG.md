@@ -28,6 +28,13 @@ The general format is:
 - C from D
 
 ```
+# 0.2.2 - DATE (17/01/2022)
+
+### Added
+- quantization weight type (--quant-type)
+- load custom modules (--custom-module)
+
+
 # 0.2.1 - DATE (08/01/2022)
 
 ### Changed
