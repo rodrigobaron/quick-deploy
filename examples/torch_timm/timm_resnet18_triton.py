@@ -14,15 +14,9 @@ batch_size = 1
 
 # load image and apply the pre-processing transformations
 image = Image.open("image.png")
-normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                                     std=[0.229, 0.224, 0.225])
+normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 
-transformations = [
-    transforms.Resize(256),
-    transforms.CenterCrop(224),
-    transforms.ToTensor(),
-    normalize
-]
+transformations = [transforms.Resize(256), transforms.CenterCrop(224), transforms.ToTensor(), normalize]
 
 for t in transformations:
     image = t(image)

@@ -95,7 +95,7 @@ def main_transformers(args):
         )
         to_optimize = onnx_optim_model_path
 
-    generic_optimize_onnx(onnx_path=to_optimize, output_path=onnx_optim_model_path)
+    generic_optimize_onnx(onnx_path=to_optimize, output_path=onnx_optim_model_path, quant_type=args.quant_type)
 
     if args.atol is not None:
         onnx_model = create_model_for_provider(path=onnx_optim_model_path, provider_to_use=provider_to_use)
@@ -169,7 +169,7 @@ def main_torch(args):
 
     with torch.inference_mode():
         output = torch_model(inputs_pytorch['input'])
-        output_np: np.ndarray = output.detach().cpu().numpy()
+        output_np: np.ndarray = output.detach().cpu().numpy() if torch.is_tensor(output) else output
 
     onnx_model_path = Path(f"{expanduser(args.workdir)}/torch_{args.name}.onnx").as_posix()
     onnx_optim_model_path = Path(f"{expanduser(args.workdir)}/torch_{args.name}.optim.onnx").as_posix()
@@ -187,7 +187,7 @@ def main_torch(args):
     if args.no_quant:
         onnx_optim_model_path = onnx_model_path
     else:
-        generic_optimize_onnx(onnx_path=onnx_model_path, output_path=onnx_optim_model_path)
+        generic_optimize_onnx(onnx_path=onnx_model_path, output_path=onnx_optim_model_path, quant_type=args.quant_type)
 
     model_conf = TritonModelConf(
         workind_directory=args.output,
@@ -204,14 +204,9 @@ def main_torch(args):
 def main_tf(args):
     """Command to parse torch models"""
     import tensorflow as tf
-
     from quick_deploy.backend.tf_ort import tf_convert_onnx
 
     tf_model = tf.keras.models.load_model(args.model)
-    if args.cuda:
-        # torch_model.cuda()
-        pass
-
     provider_to_use = get_provider(args)
 
     with open(args.file, "r") as stream:
@@ -259,7 +254,7 @@ def main_tf(args):
     if args.no_quant:
         onnx_optim_model_path = onnx_model_path
     else:
-        generic_optimize_onnx(onnx_path=onnx_model_path, output_path=onnx_optim_model_path)
+        generic_optimize_onnx(onnx_path=onnx_model_path, output_path=onnx_optim_model_path, quant_type=args.quant_type)
 
     model_conf = TritonModelConf(
         workind_directory=args.output,
@@ -370,6 +365,13 @@ def default_args(parser):
     parser.add_argument("--cuda", action="store_true", help="use cuda optimization")
     parser.add_argument("-v", "--verbose", action="store_true", help="display detailed information")
     parser.add_argument("--atol", default=None, help="test outputs when convert", type=float)
+    parser.add_argument("--custom-module", default=None, help="use custom module path")
+    parser.add_argument(
+        "--quant-type",
+        default="int8",
+        help="set quantization weights type",
+        choices=["int8", "uint8"],
+    )
 
 
 def transformers_args(parser_tra):
@@ -425,6 +427,7 @@ def xgb_args(parser_xgb):
 
 def main():
     """Entry-point function."""
+
     parser = argparse.ArgumentParser(
         description="Optimize and deploy machine learning models fast as possible!",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
@@ -459,6 +462,11 @@ def main():
 
     args = parser.parse_args()
     setup_logging(level=logging.INFO if args.verbose else logging.WARNING)
+
+    if args.custom_module is not None:
+        import sys
+
+        sys.path.insert(0, args.custom_module)
 
     Path(expanduser(args.workdir)).mkdir(parents=True, exist_ok=True)
     Path(expanduser(args.output)).mkdir(parents=True, exist_ok=True)
